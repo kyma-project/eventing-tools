@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: loadtest-subscriber-0
+  namespace: eventing-test
+spec:
+  type: ClusterIP
+  selector:
+    app: loadtest-subscriber-0
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loadtest-subscriber-1
+  namespace: eventing-test
+spec:
+  type: ClusterIP
+  selector:
+    app: loadtest-subscriber-1
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http

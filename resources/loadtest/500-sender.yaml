@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: loadtest-publisher
+  name: loadtest-publisher
+  namespace: eventing-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loadtest-publisher
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: loadtest-publisher
+    spec:
+      serviceAccountName: loadtest-publisher
+      containers:
+        - image: ko://github.com/kyma-project/eventing-tools/cmd/loadtest-publisher
+          imagePullPolicy: Always
+          name: loadtest-publisher
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: 8888
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 8888
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: 8888
+              scheme: HTTP

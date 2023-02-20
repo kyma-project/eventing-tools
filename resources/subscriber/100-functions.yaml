@@ -1,0 +1,81 @@
+apiVersion: serverless.kyma-project.io/v1alpha1
+kind: Function
+metadata:
+  name: function-0
+  namespace: eventing-test
+  labels:
+    app.kubernetes.io/name: function-0
+spec:
+  runtime: nodejs14
+  type: ''
+  minReplicas: 1
+  maxReplicas: 5
+  source: |-
+    module.exports = { 
+      main: function (event, context) {
+        let data = JSON.stringify(event.data);
+        console.log(data);
+        return data
+      }
+    }
+  deps: |-
+    { 
+      "name": "function-0",
+      "version": "1.0.0",
+      "dependencies": {}
+    }
+---
+apiVersion: serverless.kyma-project.io/v1alpha1
+kind: Function
+metadata:
+  name: function-1
+  namespace: eventing-test
+  labels:
+    app.kubernetes.io/name: function-1
+spec:
+  runtime: nodejs14
+  type: ''
+  minReplicas: 1
+  maxReplicas: 5
+  source: |-
+    module.exports = { 
+      main: function (event, context) {
+        let data = JSON.stringify(event.data);
+        console.log(data);
+        return data
+      }
+    }
+  deps: |-
+    { 
+      "name": "function-1",
+      "version": "1.0.0",
+      "dependencies": {}
+    }
+---
+apiVersion: serverless.kyma-project.io/v1alpha1
+kind: Function
+metadata:
+  name: function-2
+  namespace: eventing-test
+  labels:
+    app.kubernetes.io/name: function-2
+spec:
+  runtime: nodejs14
+  type: ''
+  minReplicas: 1
+  maxReplicas: 5
+  source: |-
+    module.exports = { 
+      main: function (event, context) {
+        let data = JSON.stringify(event.data);
+        console.log(data);
+        return data
+      }
+    }
+  deps: |-
+    { 
+      "name": "function-2",
+      "version": "1.0.0",
+      "dependencies": {}
+    }
+---
