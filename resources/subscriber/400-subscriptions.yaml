@@ -1,0 +1,234 @@
+apiVersion: eventing.kyma-project.io/v1alpha1
+kind: Subscription
+metadata:
+  name: event-subscription-0
+  namespace: eventing-test
+spec:
+  filter:
+    dialect: beb
+    filters:
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+  protocol: ""
+  protocolsettings:
+    exemptHandshake: true
+    qos: AT-LEAST-ONCE
+  sink: http://event-subscriber-0.eventing-test.svc.cluster.local
+---
+apiVersion: eventing.kyma-project.io/v1alpha1
+kind: Subscription
+metadata:
+  name: event-subscription-1
+  namespace: eventing-test
+spec:
+  filter:
+    dialect: beb
+    filters:
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+  protocol: ""
+  protocolsettings:
+    exemptHandshake: true
+    qos: AT-LEAST-ONCE
+  sink: http://event-subscriber-1.eventing-test.svc.cluster.local
+---
+apiVersion: eventing.kyma-project.io/v1alpha1
+kind: Subscription
+metadata:
+  name: event-subscription-2
+  namespace: eventing-test
+spec:
+  filter:
+    dialect: beb
+    filters:
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+  protocol: ""
+  protocolsettings:
+    exemptHandshake: true
+    qos: AT-LEAST-ONCE
+  sink: http://event-subscriber-2.eventing-test.svc.cluster.local
+---
+apiVersion: eventing.kyma-project.io/v1alpha1
+kind: Subscription
+metadata:
+  name: function-subscription-0
+  namespace: eventing-test
+spec:
+  filter:
+    dialect: beb
+    filters:
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+  protocol: ""
+  protocolsettings:
+    exemptHandshake: true
+    qos: AT-LEAST-ONCE
+  sink: http://function-0.eventing-test.svc.cluster.local
+---
+apiVersion: eventing.kyma-project.io/v1alpha1
+kind: Subscription
+metadata:
+  name: function-subscription-1
+  namespace: eventing-test
+spec:
+  filter:
+    dialect: beb
+    filters:
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+  protocol: ""
+  protocolsettings:
+    exemptHandshake: true
+    qos: AT-LEAST-ONCE
+  sink: http://function-1.eventing-test.svc.cluster.local
+---
+apiVersion: eventing.kyma-project.io/v1alpha1
+kind: Subscription
+metadata:
+  name: function-subscription-2
+  namespace: eventing-test
+spec:
+  filter:
+    dialect: beb
+    filters:
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+      - eventSource:
+          property: source
+          type: exact
+          value: ""
+        eventType:
+          property: type
+          type: exact
+          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+  protocol: ""
+  protocolsettings:
+    exemptHandshake: true
+    qos: AT-LEAST-ONCE
+  sink: http://function-2.eventing-test.svc.cluster.local
+---
