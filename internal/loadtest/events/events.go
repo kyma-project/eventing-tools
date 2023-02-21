@@ -30,6 +30,14 @@ type LegacyEvent struct {
 	EventTracing     bool   `json:"Event-Tracing"`
 }
 
+func (e *Event) version() string {
+	return fmt.Sprintf(e.VersionFormat, e.Eps)
+}
+
+func (e *Event) EventType(src string) string {
+	return fmt.Sprintf("sap.kyma.custom.%s.%s.%s", src, e.EventName, e.version())
+}
+
 type DTO struct {
 	Start string `json:"StartTime"`
 	Value int    `json:"Value"`
@@ -57,7 +65,7 @@ func newEvent(format, name string, eps int) Event {
 
 func (e *Event) handleSuccess(ctx context.Context, success chan int) {
 	var successes *tree.Node
-	t := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 
 	for {
 		select {
@@ -66,7 +74,7 @@ func (e *Event) handleSuccess(ctx context.Context, success chan int) {
 			return
 		case val := <-success:
 			successes = tree.InsertInt(successes, val)
-		case <-t.C:
+		case <-ticker.C:
 			fmt.Printf("%v.%v: %v\n", e.Start, e.EventName, successes)
 		}
 	}
@@ -105,13 +113,10 @@ func Generate(conf *config.Config) []Event {
 		}
 	}
 
-	if conf.IsVersionFormatEmpty() {
-		return events
-	}
-	if !conf.IsEventName0Empty() {
+	if !conf.IsEmptyEventFormat0() && !conf.IsVersionFormatEmpty() {
 		generate(conf.VersionFormat, conf.EventName0, conf.EpsStart0, conf.EpsIncrement0, conf.GenerateCount0)
 	}
-	if !conf.IsEventName1Empty() {
+	if !conf.IsEmptyEventFormat1() && !conf.IsVersionFormatEmpty() {
 		generate(conf.VersionFormat, conf.EventName1, conf.EpsStart1, conf.EpsIncrement1, conf.GenerateCount1)
 	}
 
@@ -123,22 +128,23 @@ func (e *Event) Stop() {
 }
 
 func (e *Event) ToLegacyEvent(seq int) LegacyEvent {
-	d := DTO{
+	dto := DTO{
 		Start: e.Start,
 		Value: seq,
 	}
-	return LegacyEvent{
-		Data:             d,
+	legacyEvent := LegacyEvent{
+		Data:             dto,
 		EventType:        e.EventName,
 		EventTypeVersion: e.version(),
 		EventTime:        time.Now().Format("2006-01-02T15:04:05.000Z"),
 		EventTracing:     true,
 	}
+	return legacyEvent
 }
 
 func (e *Event) ToCloudEvent(seq int, evtSrc string) (cev2.Event, error) {
 	ce := cev2.NewEvent()
-	ce.SetType(e.EventType())
+	ce.SetType(e.EventType(evtSrc))
 	ce.SetSource(evtSrc)
 
 	d := DTO{
@@ -146,13 +152,6 @@ func (e *Event) ToCloudEvent(seq int, evtSrc string) (cev2.Event, error) {
 		Value: seq,
 	}
 	err := ce.SetData(cev2.ApplicationJSON, d)
+
 	return ce, err
-}
-
-func (e *Event) version() string {
-	return fmt.Sprintf(e.VersionFormat, e.Eps)
-}
-
-func (e *Event) EventType() string {
-	return fmt.Sprintf("%s.%s", e.EventName, e.version())
 }

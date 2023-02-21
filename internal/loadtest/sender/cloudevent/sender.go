@@ -10,14 +10,13 @@ import (
 
 	cev2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
-	"github.com/kyma-project/eventing-tools/internal/loadtest/sender"
 	corev1 "k8s.io/api/core/v1"
-
-	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
-	"github.com/kyma-project/eventing-tools/internal/loadtest/events"
 
 	"github.com/kyma-project/eventing-tools/internal/client/cloudevents"
 	"github.com/kyma-project/eventing-tools/internal/client/transport"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/events"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/sender"
 )
 
 const (
@@ -221,19 +220,19 @@ func (s *Sender) sendEvent(evt events.Event) {
 	}
 
 	ctx := cev2.ContextWithTarget(s.ctx, s.endpoint)
-	resp := s.client.Send(ctx, ce)
+	result := s.client.Send(ctx, ce)
 	switch {
-	case cev2.IsUndelivered(resp):
+	case cev2.IsUndelivered(result):
 		{
 			atomic.AddInt32(&s.undelivered, 1)
 			evt.Feedback <- seq
 		}
-	case cev2.IsACK(resp):
+	case cev2.IsACK(result):
 		{
 			atomic.AddInt32(&s.ack, 1)
 			evt.Success <- seq
 		}
-	case cev2.IsNACK(resp):
+	case cev2.IsNACK(result):
 		{
 			atomic.AddInt32(&s.nack, 1)
 			evt.Feedback <- seq

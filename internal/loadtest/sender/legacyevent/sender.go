@@ -215,7 +215,7 @@ func (s *Sender) sendEvent(evt events.Event) {
 
 	seq := <-evt.Counter
 
-	// Build a http request out of the legacy event.
+	// Build a http request out of the event.
 	le := evt.ToLegacyEvent(seq)
 	b, err := json.Marshal(le)
 	if err != nil {
@@ -223,21 +223,21 @@ func (s *Sender) sendEvent(evt events.Event) {
 	}
 
 	r := bytes.NewReader(b)
-	rq, err := http.NewRequestWithContext(s.ctx, http.MethodPost, s.endpoint, r)
+	req, err := http.NewRequestWithContext(s.ctx, http.MethodPost, s.endpoint, r)
 	if err != nil {
 		return
 	}
-	rq.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Content-Type", "application/json")
 
 	// Send the http request.
-	resp, err := s.client.Do(rq)
+	resp, err := s.client.Do(req)
 	if err != nil {
 		atomic.AddInt32(&s.undelivered, 1)
 		evt.Feedback <- seq
 		return
 	}
 
-	// The body needs to be read so it can be closed so that the connection can be reused.
+	// Read the body allows to close it so we can use the connection.
 	defer resp.Body.Close()
 	io.ReadAll(resp.Body)
 

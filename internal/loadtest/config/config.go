@@ -14,8 +14,8 @@ type Config struct {
 	PublishEndpoint      string        `config:"publish_endpoint"`
 	UseLegacyEvents      bool          `config:"use_legacy_events"`
 	EventSource          string        `config:"event_source"`
-	MaxInflightMessages0 string        `config:"max_inflight_messages_0"`
-	MaxInflightMessages1 string        `config:"max_inflight_messages_1"`
+	MaxInflightMessages0 int           `config:"max_inflight_messages_0"`
+	MaxInflightMessages1 int           `config:"max_inflight_messages_1"`
 	EventName0           string        `config:"event_name_0"`
 	EventName1           string        `config:"event_name_1"`
 	VersionFormat        string        `config:"version_format"`
@@ -40,31 +40,28 @@ func New() *Config {
 	return c
 }
 
-// IsVersionFormatEmpty returns true if event version is empty.
+// IsVersionFormatEmpty returns true if event format is empty.
 func (c *Config) IsVersionFormatEmpty() bool {
 	return len(strings.TrimSpace(c.VersionFormat)) == 0
 }
 
-// IsEventName0Empty returns true if event name 0 is empty.
-func (c *Config) IsEventName0Empty() bool {
+// IsEmptyEventFormat0 returns true if event name 0 is empty.
+func (c *Config) IsEmptyEventFormat0() bool {
 	return len(strings.TrimSpace(c.EventName0)) == 0
 }
 
-// IsEventName1Empty returns true if event name 1 is empty.
-func (c *Config) IsEventName1Empty() bool {
+// IsEmptyEventFormat1 returns true if event name 1 is empty.
+func (c *Config) IsEmptyEventFormat1() bool {
 	return len(strings.TrimSpace(c.EventName1)) == 0
 }
 
 // ComputeEventsCount returns the count of events to generate.
 func (c *Config) ComputeEventsCount() int {
 	count := 0
-	if c.IsVersionFormatEmpty() {
-		return count
-	}
-	if !c.IsEventName0Empty() {
+	if !c.IsEmptyEventFormat0() && !c.IsVersionFormatEmpty() {
 		count += c.GenerateCount0
 	}
-	if !c.IsEventName1Empty() {
+	if !c.IsEmptyEventFormat1() && !c.IsVersionFormatEmpty() {
 		count += c.GenerateCount1
 	}
 	return count

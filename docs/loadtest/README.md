@@ -1,6 +1,5 @@
 # Loadtest
 
-This version of the load tester can test subscription `v1alpha2` only. For `v1alpha1` we have a [legacy branch](https://github.com/kyma-project/eventing-tools/tree/loadtest-subscription-v1alpha1).
 This tool is used to generate continues load on the Eventing components.
 It does that by sending Cloudevents to the Eventing publisher proxy forever and consume them inside Kyma functions.
 Ideally, it should be used when JetStream is used as the active Eventing backend.
@@ -14,10 +13,10 @@ The load test will create:
 1. **Two** Kyma function subscribers.
 2. **Two** Kyma subscriptions.
 
-| Namespace      | Subscription   | Subscriber            |
-|----------------|----------------|-----------------------|
-| eventing-test  | subscription-0 | loadtest-subscriber-0 |
-| eventing-test  | subscription-1 | loadtest-subscriber-1 |
+| Namespace      | Subscription   | Subscriber              |
+|----------------|----------------|-------------------------|
+| eventing-test  | subscription-0 | loadtest-subscriber-0   |
+| eventing-test  | subscription-1 | loadtest-subscriber-1   |
 
 > Note: Each Kyma subscription is configured with `N` unique event types.
 
@@ -29,7 +28,7 @@ The load test will create:
 
 2. **Events carry the `eps` information**:
  - EPS **50**: `order.created.v0050`.
- - EPS **90**: `order.created.v0090
+ - EPS **90**: `order.created.v0090`.
 
 *Cloud Events* have the `eps` encoded at the end as part of the `version`.
 *Legacy Events* have the `eps`  body in the `event-type` field of the body.
@@ -40,9 +39,9 @@ The load test will create:
 
 Command-line arguments:
 
-| Arguments | Description                                                                         | Default  |
-|-----------|-------------------------------------------------------------------------------------|----------|
-| addr      | The loadtest server address used by the Kubernetes liveness and readiness probes. | :8888    |
+| Arguments | Description                                                                        | Default  |
+|-----------|------------------------------------------------------------------------------------|----------|
+| addr      | The loadtest server address used by the Kubernetes liveness and readiness probes.  | :8888    |
 
 [ConfigMap](../../resources/loadtest/300-configmap.yaml) to change the loadtest behaviour at runtime:
 
@@ -50,6 +49,7 @@ Command-line arguments:
 |-------------------------|-------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
 | publish_endpoint        | The Eventing publisher proxy cloudevents endpoint.                                                                      | http://eventing-publisher-proxy.kyma-system/publish |
 | use_legacy_events:      | Use `legacy events` or `cloud events`.                                                                                  | false                                               |
+| event_source:           | The event source for both subscriptions.                                                                                | "noapp"                                             |
 | version_format:         | The format string used to create a the event-version for both subscriptions.                                            | v%04d                                               |
 | max_inflight_messages_0 | The max inflight messages for the first subscription.                                                                   | 10                                                  |
 | max_inflight_messages_1 | The max inflight messages for the second subscription.                                                                  | 10                                                  |
