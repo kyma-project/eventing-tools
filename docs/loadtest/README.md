@@ -43,7 +43,7 @@ Command-line arguments:
 |-----------|------------------------------------------------------------------------------------|----------|
 | addr      | The loadtest server address used by the Kubernetes liveness and readiness probes.  | :8888    |
 
-[ConfigMap](../../resources/loadtest/300-configmap.yaml) to change the loadtest behaviour at runtime:
+[ConfigMap](../../resources/loadtest/300-configmap.yaml) to change the load test behaviour at runtime:
 
 | Config                  | Description                                                                                                             | Default                                             |
 |-------------------------|-------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
