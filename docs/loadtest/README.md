@@ -47,7 +47,7 @@ Command-line arguments:
 
 | Config                  | Description                                                                                                             | Default                                             |
 |-------------------------|-------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
-| publish_endpoint        | The Eventing publisher proxy cloudevents endpoint.                                                                      | http://eventing-publisher-proxy.kyma-system/publish |
+| publish_endpoint        | The Eventing publisher proxy CloudEvents endpoint.                                                                      | http://eventing-publisher-proxy.kyma-system/publish |
 | use_legacy_events:      | Use `legacy events` or `CloudEvents`.                                                                                  | false                                               |
 | event_source:           | The event source for both subscriptions.                                                                                | "noapp"                                             |
 | version_format:         | The format string used to create a the event-version for both subscriptions.                                            | v%04d                                               |
