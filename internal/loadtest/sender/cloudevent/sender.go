@@ -10,8 +10,9 @@ import (
 
 	cev2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
-	"github.com/kyma-project/eventing-tools/internal/loadtest/sender"
 	corev1 "k8s.io/api/core/v1"
+
+	"github.com/kyma-project/eventing-tools/internal/loadtest/sender"
 
 	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/events"
@@ -21,7 +22,7 @@ import (
 )
 
 const (
-	//buffer the event types to be sent by workers.
+	// buffer the event types to be sent by workers.
 	buffer = 1_000_000
 )
 
@@ -104,7 +105,11 @@ func (s *Sender) start() {
 
 func (s *Sender) stop() {
 	// recover from closing already closed channels
-	defer func() { recover() }()
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("recovered from: ", r)
+		}
+	}()
 
 	s.running = false
 	s.cancel()
@@ -142,26 +147,24 @@ func (s *Sender) reportUsageAsync(d time.Duration) {
 		defer t.Stop()
 
 		for s.running {
-			select {
-			case <-t.C:
-				{
-					log.Printf(
-						"cloud events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d |",
-						targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
-					)
-					// reset counts for last report
-					atomic.StoreInt32(&s.undelivered, 0)
-					atomic.StoreInt32(&s.ack, 0)
-					atomic.StoreInt32(&s.nack, 0)
-				}
-			}
+			<-t.C
+			log.Printf(
+				"cloud events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d |",
+				targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
+			)
+			// reset counts for last report
+			atomic.StoreInt32(&s.undelivered, 0)
+			atomic.StoreInt32(&s.ack, 0)
+			atomic.StoreInt32(&s.nack, 0)
 		}
 	}()
 }
 
 func (s *Sender) queueEvent(evt events.Event) {
 	defer func() {
-		recover()
+		if r := recover(); r != nil {
+			log.Println("recovered from: ", r)
+		}
 		s.cleanup.Done()
 	}()
 
@@ -183,24 +186,22 @@ func (s *Sender) queueEvent(evt events.Event) {
 
 func (s *Sender) sendEvents() {
 	defer func() {
-		recover()
+		if r := recover(); r != nil {
+			log.Println("recovered from: ", r)
+		}
 		s.cleanup.Done()
 	}()
 
 	s.cleanup.Add(1)
 
 	for s.running {
-		select {
-		case e := <-s.queue:
-			{
-				if !s.running {
-					return
-				}
-
-				s.process <- true
-				go s.sendEvent(e)
-			}
+		e := <-s.queue
+		if !s.running {
+			return
 		}
+
+		s.process <- true
+		go s.sendEvent(e)
 	}
 }
 
