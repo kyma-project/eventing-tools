@@ -1,7 +1,7 @@
 # Loadtest
 
 This tool is used to generate continues load on the Eventing components.
-It does that by sending Cloudevents to the Eventing publisher proxy forever and consume them inside Kyma functions.
+It does that by sending CloudEvents to the Eventing publisher proxy forever and consume them inside Kyma functions.
 Ideally, it should be used when JetStream is used as the active Eventing backend.
 
 ## Eventing infrastructure
