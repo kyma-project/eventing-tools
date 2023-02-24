@@ -87,6 +87,7 @@ func insert(n *Node, v *Node) *Node {
 	return nn
 }
 
+//nolint:unused // useful for debugging the tree
 func find(v int, n *Node) bool {
 	if n == nil {
 		return false

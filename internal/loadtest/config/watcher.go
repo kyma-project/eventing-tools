@@ -2,9 +2,10 @@ package config
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/util/runtime"
 	"reflect"
 	"time"
+
+	"k8s.io/apimachinery/pkg/util/runtime"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -63,11 +64,14 @@ func (w *Watcher) start() {
 		}),
 	)
 	configMapsInformer := factory.Core().V1().ConfigMaps().Informer()
-	configMapsInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, err := configMapsInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    w.addFunc,
 		UpdateFunc: w.updateFunc,
 		DeleteFunc: w.deleteFunc,
 	})
+	if err != nil {
+		runtime.HandleError(err)
+	}
 
 	factory.Start(w.stopCh)
 	factory.WaitForCacheSync(w.stopCh)
@@ -79,7 +83,11 @@ func (w *Watcher) start() {
 
 func (w *Watcher) stop() {
 	// recover from closing already closed channels
-	defer func() { recover() }()
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered from panic: ", r)
+		}
+	}()
 
 	w.stopCh <- struct{}{}
 	close(w.stopCh)
