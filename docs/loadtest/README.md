@@ -1,23 +1,22 @@
-# Loadtest
+# Load test
 
-This version of the load tester can test subscription `v1alpha2` only. For `v1alpha1` we have a [legacy branch](https://github.com/kyma-project/eventing-tools/tree/loadtest-subscription-v1alpha1).
-This tool is used to generate continues load on the Eventing components.
-It does that by sending Cloudevents to the Eventing publisher proxy forever and consume them inside Kyma functions.
-Ideally, it should be used when JetStream is used as the active Eventing backend.
+Use this tool when JetStream is used as the active Eventing backend.
+
+The load test tool generates continuous load on the Eventing components by sending CloudEvents to the Eventing publisher proxy forever, and consuming them inside Kyma functions.
 
 ## Eventing infrastructure
 
-For testing against **Legacy Events** set `use_legacy events` to `true`. Leave it to `false` to test against **Cloud Events**.
+For testing against **Legacy Events** set `use_legacy events` to `true`. Leave it to `false` to test against **CloudEvents**.
 
 The load test will create:
 
 1. **Two** Kyma function subscribers.
 2. **Two** Kyma subscriptions.
 
-| Namespace      | Subscription   | Subscriber            |
-|----------------|----------------|-----------------------|
-| eventing-test  | subscription-0 | loadtest-subscriber-0 |
-| eventing-test  | subscription-1 | loadtest-subscriber-1 |
+| Namespace      | Subscription   | Subscriber              |
+|----------------|----------------|-------------------------|
+| eventing-test  | subscription-0 | loadtest-subscriber-0   |
+| eventing-test  | subscription-1 | loadtest-subscriber-1   |
 
 > Note: Each Kyma subscription is configured with `N` unique event types.
 
@@ -29,27 +28,28 @@ The load test will create:
 
 2. **Events carry the `eps` information**:
  - EPS **50**: `order.created.v0050`.
- - EPS **90**: `order.created.v0090
+ - EPS **90**: `order.created.v0090`.
 
-*Cloud Events* have the `eps` encoded at the end as part of the `version`.
+*CloudEvents* have the `eps` encoded at the end as part of the `version`.
 *Legacy Events* have the `eps`  body in the `event-type` field of the body.
 
-> Note: Encoding the EPS in the event type version is used only for debugging purposes and is not a production use-case.
+> Note: Encoding the EPS in the event type version is used only for debugging purposes and is not a production use case.
 
 ## Configurations
 
 Command-line arguments:
 
-| Arguments | Description                                                                         | Default  |
-|-----------|-------------------------------------------------------------------------------------|----------|
-| addr      | The loadtest server address used by the Kubernetes liveness and readiness probes. | :8888    |
+| Arguments | Description                                                                        | Default  |
+|-----------|------------------------------------------------------------------------------------|----------|
+| addr      | The load test server address used by the Kubernetes liveness and readiness probes.  | :8888    |
 
-[ConfigMap](../../resources/loadtest/300-configmap.yaml) to change the loadtest behaviour at runtime:
+[ConfigMap](../../resources/loadtest/300-configmap.yaml) to change the load test behaviour at runtime:
 
 | Config                  | Description                                                                                                             | Default                                             |
 |-------------------------|-------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
-| publish_endpoint        | The Eventing publisher proxy cloudevents endpoint.                                                                      | http://eventing-publisher-proxy.kyma-system/publish |
-| use_legacy_events:      | Use `legacy events` or `cloud events`.                                                                                  | false                                               |
+| publish_endpoint        | The Eventing publisher proxy CloudEvents endpoint.                                                                      | http://eventing-publisher-proxy.kyma-system/publish |
+| use_legacy_events:      | Use `legacy events` or `CloudEvents`.                                                                                  | false                                               |
+| event_source:           | The event source for both subscriptions.                                                                                | "noapp"                                             |
 | version_format:         | The format string used to create a the event-version for both subscriptions.                                            | v%04d                                               |
 | max_inflight_messages_0 | The max inflight messages for the first subscription.                                                                   | 10                                                  |
 | max_inflight_messages_1 | The max inflight messages for the second subscription.                                                                  | 10                                                  |

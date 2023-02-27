@@ -13,13 +13,12 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 
 	"github.com/kyma-project/eventing-tools/internal/loadtest/events"
-
 	"github.com/kyma-project/eventing-tools/internal/logger"
 	"github.com/kyma-project/eventing-tools/internal/probes"
 	"github.com/kyma-project/eventing-tools/internal/tree"
 )
 
-var evtChn chan *event.Event
+var evtChan chan *event.Event
 var received map[string]*tree.Node
 
 func main() {
@@ -27,7 +26,7 @@ func main() {
 	http.HandleFunc(probes.EndpointReadyz, probes.DefaultHandler)
 	http.HandleFunc(probes.EndpointHealthz, probes.DefaultHandler)
 
-	evtChn = make(chan *event.Event, 100000)
+	evtChan = make(chan *event.Event, 100000)
 	received = make(map[string]*tree.Node)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -47,12 +46,12 @@ func readAddress() (addr string) {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	event, err := cloudevents.NewEventFromHTTPRequest(r)
+	evt, err := cloudevents.NewEventFromHTTPRequest(r)
 	if err != nil {
 		log.Printf("failed to parse CloudEvent from request: %v", err)
 		return
 	}
-	evtChn <- event
+	evtChan <- evt
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -60,7 +59,7 @@ func processEvents(ctx context.Context) {
 	timer := time.NewTicker(10 * time.Second)
 	for {
 		select {
-		case e := <-evtChn:
+		case e := <-evtChan:
 			d := &events.DTO{}
 			err := e.DataAs(d)
 			if err != nil {

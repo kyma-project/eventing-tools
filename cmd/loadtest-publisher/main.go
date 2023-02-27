@@ -6,6 +6,7 @@ import (
 	"github.com/kyma-project/eventing-tools/internal/k8s"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/infra"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/infra/v1alpha1"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/sender/cloudevent"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/sender/legacyevent"
 	"github.com/kyma-project/eventing-tools/internal/logger"
@@ -19,7 +20,7 @@ func main() {
 
 	legacyEventSender := legacyevent.NewSender(appConfig)
 	cloudEventSender := cloudevent.NewSender(appConfig)
-	infraInstance := infra.New(appConfig, k8sConfig)
+	infraInstance := v1alpha1.New(appConfig, k8sConfig)
 
 	config.NewWatcher(k8sClient, infra.Namespace, infra.ConfigMapName).
 		OnAddNotify(infraInstance).
