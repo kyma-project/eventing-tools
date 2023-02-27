@@ -34,7 +34,7 @@ The load test will create:
 *CloudEvents* have the `eps` encoded at the end as part of the `version`.
 *Legacy Events* have the `eps`  body in the `event-type` field of the body.
 
-> Note: Encoding the EPS in the event type version is used only for debugging purposes and is not a production use-case.
+> Note: Encoding the EPS in the event type version is used only for debugging purposes and is not a production use case.
 
 ## Configurations
 
