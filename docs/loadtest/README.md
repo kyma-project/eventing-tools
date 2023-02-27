@@ -6,7 +6,7 @@ The load test tool generates continuous load on the Eventing components by sendi
 
 ## Eventing infrastructure
 
-For testing against **Legacy Events** set `use_legacy events` to `true`. Leave it to `false` to test against **Cloud Events**.
+For testing against **Legacy Events** set `use_legacy events` to `true`. Leave it to `false` to test against **CloudEvents**.
 
 The load test will create:
 
