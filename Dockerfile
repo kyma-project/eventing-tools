@@ -5,10 +5,7 @@ WORKDIR /app
 
 ENV GOPATH /go
 
-COPY ./internal/ ./internal
-COPY ./cmd/ ./cmd
-COPY ./go.mod ./go.mod
-COPY ./go.sum ./go.sum
+COPY . /app
 
 # Build
 RUN <<EOT
