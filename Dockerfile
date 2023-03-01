@@ -8,12 +8,10 @@ ENV GOPATH /go
 COPY . /app
 
 # Build
-RUN <<EOT
-  go install ./cmd/loadtest-subscriber
-  go install ./cmd/loadtest-publisher
-  go install ./cmd/publisher
+RUN go install ./cmd/loadtest-subscriber && \
+  go install ./cmd/loadtest-publisher && \
+  go install ./cmd/publisher && \
   go install ./cmd/subscriber
-EOT
 
 FROM gcr.io/distroless/static:nonroot
 LABEL source = git@github.com:kyma-project/kyma.git
