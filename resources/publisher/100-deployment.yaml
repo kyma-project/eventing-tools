@@ -18,7 +18,8 @@ spec:
         app: publisher
     spec:
       containers:
-        - image: ko://github.com/kyma-project/eventing-tools/cmd/publisher
+        - image: eu.gcr.io/kyma-project/eventing-tools:latest
+          command: ["loadtest-publisher"]
           imagePullPolicy: IfNotPresent
           name: publisher
           env:
