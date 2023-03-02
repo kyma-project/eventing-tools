@@ -19,7 +19,8 @@ spec:
     spec:
       serviceAccountName: loadtest-publisher
       containers:
-        - image: ko://github.com/kyma-project/eventing-tools/cmd/loadtest-publisher
+        - image: eu.gcr.io/kyma-project/eventing-tools:latest
+          command: ["loadtest-publisher"]
           imagePullPolicy: Always
           name: loadtest-publisher
           ports:
