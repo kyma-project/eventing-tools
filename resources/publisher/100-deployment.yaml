@@ -18,7 +18,7 @@ spec:
         app: publisher
     spec:
       containers:
-        - image: ko://github.com/kyma-project/eventing-tools/cmd/publisher
+        - image: eu.gcr.io/kyma-project/eventing-tools:v20230301-530d4038
           imagePullPolicy: IfNotPresent
           name: publisher
           env:
