@@ -14,7 +14,7 @@ RUN go install ./cmd/loadtest-subscriber && \
   go install ./cmd/subscriber
 
 FROM gcr.io/distroless/static:nonroot
-LABEL source = git@github.com:kyma-project/kyma.git
+LABEL source = git@github.com:kyma-project/eventing-tools.git
 
 WORKDIR /
 COPY --from=builder /go/bin/* /usr/local/bin/
