@@ -28,7 +28,7 @@ spec:
             - kyma-system
             topologyKey: kubernetes.io/hostname
       containers:
-        - image: ko://github.com/kyma-project/eventing-tools/cmd/loadtest-subscriber
+        - image: eu.gcr.io/kyma-project/eventing-tools:v20230301-530d4038
           imagePullPolicy: IfNotPresent
           name: loadtest-subscriber
           ports:
@@ -82,7 +82,7 @@ spec:
             - kyma-system
             topologyKey: kubernetes.io/hostname
       containers:
-        - image: ko://github.com/kyma-project/eventing-tools/cmd/loadtest-subscriber
+        - image: eu.gcr.io/kyma-project/eventing-tools:v20230301-530d4038
           imagePullPolicy: IfNotPresent
           name: loadtest-subscriber
           ports:
