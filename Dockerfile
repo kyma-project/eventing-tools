@@ -11,7 +11,8 @@ COPY . /app
 RUN go install ./cmd/loadtest-subscriber && \
   go install ./cmd/loadtest-publisher && \
   go install ./cmd/publisher && \
-  go install ./cmd/subscriber
+  go install ./cmd/subscriber && \
+  go install ./cmd/local-subscriber
 
 FROM gcr.io/distroless/static:nonroot
 LABEL source = git@github.com:kyma-project/eventing-tools.git

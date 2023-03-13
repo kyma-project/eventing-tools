@@ -28,9 +28,10 @@ spec:
             - kyma-system
             topologyKey: kubernetes.io/hostname
       containers:
-        - image: eu.gcr.io/kyma-project/eventing-tools:v20230301-530d4038
+        - image: docker.io/muralov/loadtest-local-subscriber:v3
           imagePullPolicy: IfNotPresent
           name: loadtest-subscriber
+          command: ["local-subscriber"]
           ports:
             - name: http
               protocol: TCP
@@ -82,9 +83,10 @@ spec:
             - kyma-system
             topologyKey: kubernetes.io/hostname
       containers:
-        - image: eu.gcr.io/kyma-project/eventing-tools:v20230301-530d4038
+        - image: docker.io/muralov/loadtest-local-subscriber:v3
           imagePullPolicy: IfNotPresent
-          name: loadtest-subscriber
+          name: local-subscriber
+          command: ["local-subscriber"]
           ports:
             - name: http
               protocol: TCP
