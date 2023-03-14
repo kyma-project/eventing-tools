@@ -4,5 +4,5 @@ images:
 - name: eu.gcr.io/kyma-project/eventing-tools
   newTag: PR-1
 
-resources:
-  - ../../base
+bases:
+- ../base

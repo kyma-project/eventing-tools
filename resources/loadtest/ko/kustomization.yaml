@@ -3,8 +3,8 @@ kind: Kustomization
 
 # Example configuration for the webserver
 # at https://github.com/monopole/hello
-resources:
-  - ../../base
+bases:
+  - ../base
 
 patchesStrategicMerge:
 - publisher.yaml

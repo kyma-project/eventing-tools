@@ -5,4 +5,4 @@ images:
   newTag: PR-1
 
 resources:
-  - ../../base
+- ../base
