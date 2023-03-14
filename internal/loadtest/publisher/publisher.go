@@ -1,4 +1,4 @@
-package main
+package publisher
 
 import (
 	"net/http"
@@ -12,7 +12,7 @@ import (
 	"github.com/kyma-project/eventing-tools/internal/probes"
 )
 
-func main() {
+func Start() {
 	appConfig := config.New()
 	k8sConfig := k8s.ConfigOrDie()
 	k8sClient := k8s.ClientOrDie(k8sConfig)

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadtest-subscriber-0
+  namespace: eventing-test
+spec:
+  template:
+    spec:
+      containers:
+        - image: ko://github.com/kyma-project/eventing-tools
+          name: loadtest-subscriber
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadtest-subscriber-1
+  namespace: eventing-test
+spec:
+  template:
+    spec:
+      containers:
+        - image: ko://github.com/kyma-project/eventing-tools
+          name: loadtest-subscriber

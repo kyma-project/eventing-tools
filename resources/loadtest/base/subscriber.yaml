@@ -29,6 +29,11 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
         - image: eu.gcr.io/kyma-project/eventing-tools:v20230301-530d4038
+          args:
+            - subscriber
+            - --loadtest
+            - --listen-port
+            - "8888"
           imagePullPolicy: IfNotPresent
           name: loadtest-subscriber
           ports:
@@ -83,6 +88,11 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
         - image: eu.gcr.io/kyma-project/eventing-tools:v20230301-530d4038
+          args:
+            - subscriber
+            - --loadtest
+            - --listen-port
+            - "8888"
           imagePullPolicy: IfNotPresent
           name: loadtest-subscriber
           ports:
