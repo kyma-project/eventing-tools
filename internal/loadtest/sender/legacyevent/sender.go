@@ -41,6 +41,7 @@ type Sender struct {
 	undelivered int32
 	ack         int32
 	nack        int32
+	eventSize   int // event size in bytes
 }
 
 func NewSender(conf *config.Config) *Sender {
@@ -83,6 +84,7 @@ func (s *Sender) init() {
 	}
 	s.ctx, s.cancel = context.WithCancel(context.TODO())
 	s.events = events.Generate(s.config)
+	s.eventSize = 0
 	s.process = make(chan bool, s.config.EpsLimit)
 	s.queue = make(chan events.Event, buffer)
 	s.undelivered = 0
@@ -148,8 +150,8 @@ func (s *Sender) reportUsageAsync(d time.Duration) {
 		for s.running {
 			<-t.C
 			log.Printf(
-				"legacy events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d |",
-				targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
+				"legacy events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d | eventSize:%d bytes |",
+				targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack, s.eventSize,
 			)
 
 			// Reset counts for last report.
@@ -221,6 +223,8 @@ func (s *Sender) sendEvent(evt events.Event) {
 	if err != nil {
 		return
 	}
+
+	s.eventSize = len(b)
 
 	r := bytes.NewReader(b)
 	rq, err := http.NewRequestWithContext(s.ctx, http.MethodPost, s.endpoint, r)
