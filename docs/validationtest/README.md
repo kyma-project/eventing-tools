@@ -1,8 +1,19 @@
-# Subscriber
+# Validationtest
 
-This tool is used to create Kyma subscriptions and their corresponding subscribers.
+This set of tools is used to publish continues legacy and cloudevents the Eventing publisher proxy Kyma. In addition to the publisher
+a set of subscribers is created with corresponding subscriptions.
 
-## Eventing infrastructure
+## Application to event type mapping
+
+Currently, it is hardcoded which application sends which event type as follows:
+
+| Application   | Event type                                       |
+|---------------|--------------------------------------------------|
+| commerce      | order.created                                    |
+| appname       | DocuSing_BO.Account_DocuSign.Updated             |
+| no-app        | New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d |
+
+## Subscription
 
 1. **Three** microservice subscribers.
 2. **Three** Kyma function subscribers.
@@ -20,6 +31,7 @@ This tool is used to create Kyma subscriptions and their corresponding subscribe
 | eventing-test   | function-subscription-1 | function-1         |
 | eventing-test   | function-subscription-2 | function-2         |
 
+
 ## Usage
 
 ### Deploy
@@ -27,10 +39,32 @@ This tool is used to create Kyma subscriptions and their corresponding subscribe
 1. Connect to a Kubernetes cluster.
 2. Execute:
    ```bash
-   make subscriber-deploy
+   make validationtest-deploy
    ```
 
+### Stop
+
+This is useful in case we want to stop sending events to the Eventing publisher proxy, but preserve the Eventing
+infrastructure inside the `eventing-test` namespace.
+
+1. Connect to a Kubernetes cluster.
+2. Execute:
+   ```bash
+   make validationtest-stop
+   ```
+
+   > Note: To continue sending events, deploy the publisher again.
+
 ### Logs
+
+#### Publisher Logs
+
+1. Connect to a Kubernetes cluster.
+2. Publisher logs:
+   ```bash
+   stern -n eventing-test publisher -c publisher --since 1s
+   ```
+#### Subscriber Logs
 
 1. Connect to a Kubernetes cluster.
 2. Functions logs:
@@ -47,10 +81,9 @@ This tool is used to create Kyma subscriptions and their corresponding subscribe
 1. Connect to a Kubernetes cluster.
 2. Execute:
    ```bash
-   make subscriber-delete
+   make validationtest-delete
    ```
 
 ## Future enhancements
-
 - Add instructions for deploying the Eventing infrastructure with an empty prefix.
 - Automate deploying the Eventing infrastructure based on the Eventing prefix configured in the connected Kyma cluster.
