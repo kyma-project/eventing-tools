@@ -44,6 +44,7 @@ type Sender struct {
 	undelivered int32
 	ack         int32
 	nack        int32
+	eventSize   int // event size in bytes
 }
 
 func NewSender(conf *config.Config) *Sender {
@@ -84,6 +85,7 @@ func (s *Sender) init() {
 	s.client = cloudevents.NewClientOrDie(t.Clone())
 	s.ctx, s.cancel = context.WithCancel(context.TODO())
 	s.events = events.Generate(s.config)
+	s.eventSize = 0
 	s.process = make(chan bool, s.config.EpsLimit)
 	s.queue = make(chan events.Event, buffer)
 	s.undelivered = 0
@@ -149,8 +151,8 @@ func (s *Sender) reportUsageAsync(d time.Duration) {
 		for s.running {
 			<-t.C
 			log.Printf(
-				"cloud events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d |",
-				targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
+				"cloud events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d | eventSize:%d bytes |",
+				targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack, s.eventSize,
 			)
 			// reset counts for last report
 			atomic.StoreInt32(&s.undelivered, 0)
@@ -220,6 +222,8 @@ func (s *Sender) sendEvent(evt events.Event) {
 	if err != nil {
 		return
 	}
+
+	s.eventSize = len(ce.Data())
 
 	ctx := cev2.ContextWithTarget(s.ctx, s.endpoint)
 	resp := s.client.Send(ctx, ce)
