@@ -1,8 +1,7 @@
-package main
+package subscriber
 
 import (
-	"flag"
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/kyma-project/eventing-tools/internal/logger"
@@ -10,16 +9,9 @@ import (
 	"github.com/kyma-project/eventing-tools/internal/subscriber"
 )
 
-func main() {
+func Start(port int) {
 	http.HandleFunc("/", subscriber.Handler)
 	http.HandleFunc(probes.EndpointReadyz, probes.DefaultHandler)
 	http.HandleFunc(probes.EndpointHealthz, probes.DefaultHandler)
-	logger.LogIfError(http.ListenAndServe(readAddress(), nil))
-}
-
-func readAddress() (addr string) {
-	flag.StringVar(&addr, "addr", ":8888", "HTTP Server listen address.")
-	flag.Parse()
-	log.Printf("Subscriber starting on port [%s]", addr)
-	return addr
+	logger.LogIfError(http.ListenAndServe(fmt.Sprintf(":%v", port), nil))
 }
