@@ -1,11 +1,10 @@
 # Validationtest
 
-This set of tools is used to publish continues legacy and cloudevents the Eventing publisher proxy Kyma. In addition to the publisher
-a set of subscribers is created with corresponding subscriptions.
+This set of tools continuously publishes legacy and CloudEvents the Eventing publisher proxy in Kyma. In addition to the publisher, a set of subscribers is created with corresponding subscriptions.
 
 ## Application to event type mapping
 
-Currently, it is hardcoded which application sends which event type as follows:
+Currently, it is hardcoded which application sends which event type:
 
 | Application   | Event type                                       |
 |---------------|--------------------------------------------------|
@@ -34,7 +33,7 @@ Currently, it is hardcoded which application sends which event type as follows:
 
 ## Usage
 
-### Deploy
+### Deploy Validationtest 
 
 1. Connect to a Kubernetes cluster.
 2. Execute:
@@ -42,10 +41,9 @@ Currently, it is hardcoded which application sends which event type as follows:
    make validationtest-deploy
    ```
 
-### Stop
+### Stop Validationtest
 
-This is useful in case we want to stop sending events to the Eventing publisher proxy, but preserve the Eventing
-infrastructure inside the `eventing-test` namespace.
+You can stop sending events to the Eventing publisher proxy while preserving the Eventing infrastructure inside the `eventing-test` Namespace with the following command:
 
 1. Connect to a Kubernetes cluster.
 2. Execute:
@@ -57,14 +55,14 @@ infrastructure inside the `eventing-test` namespace.
 
 ### Logs
 
-#### Publisher Logs
+#### View Publisher Logs
 
 1. Connect to a Kubernetes cluster.
 2. Publisher logs:
    ```bash
    stern -n eventing-test publisher -c publisher --since 1s
    ```
-#### Subscriber Logs
+#### View Subscriber Logs
 
 1. Connect to a Kubernetes cluster.
 2. Functions logs:
