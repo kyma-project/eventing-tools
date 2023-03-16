@@ -41,7 +41,8 @@ type Sender struct {
 	undelivered int32
 	ack         int32
 	nack        int32
-	eventSize   int // event size in bytes
+	// event size in bytes
+	eventSize int32
 }
 
 func NewSender(conf *config.Config) *Sender {
@@ -150,7 +151,7 @@ func (s *Sender) reportUsageAsync(d time.Duration) {
 		for s.running {
 			<-t.C
 			log.Printf(
-				"legacy events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d | event size:%d bytes |",
+				"legacy events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d | ack payload size:%d bytes |",
 				targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack, s.eventSize,
 			)
 
@@ -224,7 +225,7 @@ func (s *Sender) sendEvent(evt events.Event) {
 		return
 	}
 
-	s.eventSize = len(b)
+	singleEventSize := len(b)
 
 	r := bytes.NewReader(b)
 	rq, err := http.NewRequestWithContext(s.ctx, http.MethodPost, s.endpoint, r)
@@ -249,6 +250,7 @@ func (s *Sender) sendEvent(evt events.Event) {
 	case resp.StatusCode/100 == 2:
 		{
 			atomic.AddInt32(&s.ack, 1)
+			s.eventSize = int32(singleEventSize) * s.ack
 			evt.Success <- seq
 		}
 	default:

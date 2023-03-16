@@ -44,7 +44,8 @@ type Sender struct {
 	undelivered int32
 	ack         int32
 	nack        int32
-	eventSize   int // event size in bytes
+	// event payload size in bytes
+	eventSize int32
 }
 
 func NewSender(conf *config.Config) *Sender {
@@ -151,7 +152,7 @@ func (s *Sender) reportUsageAsync(d time.Duration) {
 		for s.running {
 			<-t.C
 			log.Printf(
-				"cloud events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d | event size:%d bytes |",
+				"cloud events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d | ack payload size:%d bytes |",
 				targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack, s.eventSize,
 			)
 			// reset counts for last report
@@ -223,7 +224,7 @@ func (s *Sender) sendEvent(evt events.Event) {
 		return
 	}
 
-	s.eventSize = len(ce.Data())
+	singleEventSize := len(ce.Data())
 
 	ctx := cev2.ContextWithTarget(s.ctx, s.endpoint)
 	resp := s.client.Send(ctx, ce)
@@ -236,6 +237,7 @@ func (s *Sender) sendEvent(evt events.Event) {
 	case cev2.IsACK(resp):
 		{
 			atomic.AddInt32(&s.ack, 1)
+			s.eventSize = int32(singleEventSize) * s.ack
 			evt.Success <- seq
 		}
 	case cev2.IsNACK(resp):
