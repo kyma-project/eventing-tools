@@ -14,12 +14,17 @@ Currently, it is hardcoded which application sends which event type:
 
 ## Subscription
 
-1. **Three** microservice subscribers.
-2. **Three** Kyma function subscribers.
-3. **Six** Kyma subscriptions each of them has the following hardcoded filters:
+In total six subscribers will be created:
+- **Three** microservice subscribers.
+- **Three** Kyma function subscribers.
+
+Those subscribers will be used as sinks in a set of six Kyma subscriptions.
+Each of them has the following hardcoded filters:
    - `sap.kyma.custom.commerce.order.created.v1`.
    - `sap.kyma.custom.appname.DocuSing_BO.Account_DocuSign.Updated.v1`.
    - `sap.kyma.custom.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1`.
+
+### Subscription -> Subscriber mapping
 
 | Namespace       | Subscription            | Subscriber         |
 |-----------------|-------------------------|--------------------|
