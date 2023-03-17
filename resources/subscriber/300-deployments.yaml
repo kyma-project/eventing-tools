@@ -18,7 +18,7 @@ spec:
         app: event-subscriber-0
     spec:
       containers:
-        - image: eu.gcr.io/kyma-project/eventing-tools:v20230301-530d4038
+        - image: eu.gcr.io/kyma-project/eventing-tools:v20230316-169f07ed
           imagePullPolicy: IfNotPresent
           name: event-subscriber
           ports:
@@ -62,7 +62,7 @@ spec:
         app: event-subscriber-1
     spec:
       containers:
-        - image: eu.gcr.io/kyma-project/eventing-tools:v20230301-530d4038
+        - image: eu.gcr.io/kyma-project/eventing-tools:v20230316-169f07ed
           imagePullPolicy: IfNotPresent
           name: event-subscriber
           ports:
@@ -106,7 +106,7 @@ spec:
         app: event-subscriber-2
     spec:
       containers:
-        - image: eu.gcr.io/kyma-project/eventing-tools:v20230301-530d4038
+        - image: eu.gcr.io/kyma-project/eventing-tools:v20230316-169f07ed
           imagePullPolicy: IfNotPresent
           name: event-subscriber
           ports:
