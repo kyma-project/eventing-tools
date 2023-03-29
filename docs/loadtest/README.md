@@ -38,11 +38,11 @@ The load test will create:
 
 ## Configurations
 
-Command-line arguments:
+Command-line arguments for the subscriber:
 
 | Arguments | Description                                                                         | Default  |
 |-----------|-------------------------------------------------------------------------------------|----------|
-| addr      | The loadtest server address used by the Kubernetes liveness and readiness probes. | :8888    |
+| --listen-port      | The loadtest server address used by the Kubernetes liveness and readiness probes. | :8888    |
 
 [ConfigMap](../../resources/loadtest/300-configmap.yaml) to change the loadtest behaviour at runtime:
 

@@ -1,8 +1,7 @@
-package main
+package subscriber
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,8 +21,8 @@ import (
 var evtChn chan *event.Event
 var received map[string]*tree.Node
 
-func main() {
-	http.HandleFunc("/", handler) //sink
+func Start(port int) {
+	http.HandleFunc("/", handler) // sink
 	http.HandleFunc(probes.EndpointReadyz, probes.DefaultHandler)
 	http.HandleFunc(probes.EndpointHealthz, probes.DefaultHandler)
 
@@ -35,15 +34,7 @@ func main() {
 
 	go processEvents(ctx)
 
-	logger.LogIfError(http.ListenAndServe(readAddress(), nil))
-}
-
-func readAddress() (addr string) {
-	flag.StringVar(&addr, "addr", ":8888", "HTTP Server listen address.")
-	flag.Parse()
-	log.Printf("Subscriber starting on port:[%s]", addr)
-	log.Printf("Subscriber starting on port [%s]", addr)
-	return addr
+	logger.LogIfError(http.ListenAndServe(fmt.Sprintf(":%v", port), nil))
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadtest-publisher
+  namespace: eventing-test
+spec:
+  template:
+    spec:
+      containers:
+        - image: ko://github.com/kyma-project/eventing-tools
+          name: loadtest-publisher

@@ -1,4 +1,4 @@
-package main
+package publisher
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/kyma-project/eventing-tools/internal/publisher/config"
 )
 
-func main() {
+func Start() {
 	conf := config.ProcessOrDie()
 	t := transport.New(conf.MaxIdleConns, conf.MaxConnsPerHost, conf.MaxIdleConnsPerHost, conf.IdleConnTimeout)
 	clientHTTP := pkghttp.NewClient(t.Clone())
