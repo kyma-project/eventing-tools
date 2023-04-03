@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: loadtest-publisher
       containers:
-        - image: eu.gcr.io/kyma-project/eventing-tools:v20230320-5810b829
+        - image: eu.gcr.io/kyma-project/eventing-tools:v20230329-fc309b92
           args:
             - publisher
             - --loadtest
