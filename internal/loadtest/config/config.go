@@ -3,7 +3,6 @@ package config
 import (
 	"flag"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 )
@@ -68,22 +67,6 @@ func (c *Config) ComputeEventsCount() int {
 		count += c.GenerateCount1
 	}
 	return count
-}
-
-// ComputeTotalEventsPerSecond returns the total events per second.
-func (c *Config) ComputeTotalEventsPerSecond() int {
-	count := 0
-	for i, eps := 0, c.EpsStart0; i < c.GenerateCount0; i, eps = i+1, c.EpsStart0+(c.EpsIncrement0*(i+1)) {
-		count += eps
-	}
-	for i, eps := 0, c.EpsStart1; i < c.GenerateCount1; i, eps = i+1, c.EpsStart1+(c.EpsIncrement1*(i+1)) {
-		count += eps
-	}
-	return count
-}
-
-func (c *Config) PrintTotalEventsPerSecond() {
-	log.Printf("Total EPS: %d", c.ComputeTotalEventsPerSecond())
 }
 
 func (c *Config) String() string {

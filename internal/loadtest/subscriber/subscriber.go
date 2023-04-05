@@ -11,7 +11,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 
-	"github.com/kyma-project/eventing-tools/internal/loadtest/events"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/events/payload"
 
 	"github.com/kyma-project/eventing-tools/internal/logger"
 	"github.com/kyma-project/eventing-tools/internal/probes"
@@ -52,7 +52,7 @@ func processEvents(ctx context.Context) {
 	for {
 		select {
 		case e := <-evtChn:
-			d := &events.DTO{}
+			d := &payload.DTO{}
 			err := e.DataAs(d)
 			if err != nil {
 				log.Print(err)

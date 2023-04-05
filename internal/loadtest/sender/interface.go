@@ -1,6 +1,8 @@
 package sender
 
-import "github.com/kyma-project/eventing-tools/internal/loadtest/config"
+import (
+	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
+)
 
 type Sender interface {
 	config.AddNotifiable

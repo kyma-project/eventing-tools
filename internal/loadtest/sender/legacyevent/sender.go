@@ -2,73 +2,92 @@ package legacyevent
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"golang.org/x/net/context"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/kyma-project/eventing-tools/internal/client/transport"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/events"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/events/GenericEvent"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/events/GenericFactory"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/sender"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/subscription"
 )
 
 const (
+	// buffer the event types to be sent by workers.
 	buffer = 1_000_000
 )
 
-// Compile-time check of interface implementation.
+// compile-time check for interfaces implementation.
 var _ sender.Sender = &Sender{}
+var _ subscription.Notifiable = &Sender{}
 
+// Sender sends legacy events.
 type Sender struct {
 	ctx         context.Context
 	cancel      context.CancelFunc
-	config      *config.Config
-	events      []events.Event
 	client      http.Client
+	config      *config.Config
+	events      map[string][]*GenericEvent.Event
+	factory     events.EventFactory
 	endpoint    string
 	process     chan bool
-	queue       chan events.Event
+	queue       chan *GenericEvent.Event
 	cleanup     sync.WaitGroup
 	running     bool
 	undelivered int32
 	ack         int32
 	nack        int32
+	mapLock     sync.RWMutex
 }
 
 func NewSender(conf *config.Config) *Sender {
-	return &Sender{config: conf}
+	s := &Sender{config: conf}
+	s.undelivered = 0
+	s.ack = 0
+	s.nack = 0
+	s.events = make(map[string][]*GenericEvent.Event)
+	s.factory = GenericFactory.New(s)
+	s.queue = make(chan *GenericEvent.Event, buffer)
+
+	return s
 }
 
 func (s *Sender) NotifyAdd(cm *corev1.ConfigMap) {
 	s.stop()
 	config.Map(cm, s.config)
-	if !s.config.UseLegacyEvents {
-		return
+	t := transport.New(s.config.MaxIdleConns, s.config.MaxConnsPerHost, s.config.MaxIdleConnsPerHost, s.config.IdleConnTimeout)
+	s.client = http.Client{
+		Transport: t,
 	}
-	log.Printf("Starting Legacy Event Sender")
-	s.init()
-	// Delay for few seconds.
-	time.Sleep(10 * time.Second)
+	s.ctx, s.cancel = context.WithCancel(context.TODO())
+	s.process = make(chan bool, s.config.EpsLimit)
+	s.queue = make(chan *GenericEvent.Event, buffer)
 	s.start()
 }
 
 func (s *Sender) NotifyUpdate(cm *corev1.ConfigMap) {
 	s.stop()
 	config.Map(cm, s.config)
-	if !s.config.UseLegacyEvents {
-		return
+	t := transport.New(s.config.MaxIdleConns, s.config.MaxConnsPerHost, s.config.MaxIdleConnsPerHost, s.config.IdleConnTimeout)
+	s.client = http.Client{
+		Transport: t,
 	}
-	log.Printf("Starting Legacy Event Sender")
-	s.init()
-	time.Sleep(10 * time.Second)
+	s.ctx, s.cancel = context.WithCancel(context.TODO())
+	s.process = make(chan bool, s.config.EpsLimit)
+	s.queue = make(chan *GenericEvent.Event, buffer)
 	s.start()
 }
 
@@ -76,64 +95,91 @@ func (s *Sender) NotifyDelete(*corev1.ConfigMap) {
 	s.stop()
 }
 
-func (s *Sender) init() {
-	t := transport.New(s.config.MaxIdleConns, s.config.MaxConnsPerHost, s.config.MaxIdleConnsPerHost, s.config.IdleConnTimeout)
-	s.client = http.Client{
-		Transport: t.Clone(),
+func (s *Sender) OnNewSubscription(sub *unstructured.Unstructured) {
+	log.Printf("Starting Legacy Event Sender")
+	e := s.factory.FromSubscription(sub, events.LegacyFormat)
+	if len(e) == 0 {
+		return
 	}
-	s.ctx, s.cancel = context.WithCancel(context.TODO())
-	s.events = events.Generate(s.config)
-	s.process = make(chan bool, s.config.EpsLimit)
-	s.queue = make(chan events.Event, buffer)
-	s.undelivered = 0
-	s.ack = 0
-	s.nack = 0
-	s.endpoint = fmt.Sprintf("%s/%s/v1/events", s.config.PublishEndpoint, s.config.EventSource)
-	log.Printf(
-		"legacy event sender endpoint: %s",
-		s.endpoint,
-	)
+	// s.queue = make(chan events.Event, buffer)
+	s.mapLock.Lock()
+	s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] = e
+	s.mapLock.Unlock()
+}
+
+func (s *Sender) OnChangedSubscription(sub *unstructured.Unstructured) {
+	ne := s.factory.FromSubscription(sub, events.LegacyFormat)
+	if len(ne) == 0 {
+		return
+	}
+	s.mapLock.RLock()
+	for _, e := range s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] {
+		e.Stop()
+	}
+	s.mapLock.RUnlock()
+	s.queue = make(chan *GenericEvent.Event, buffer)
+
+	s.mapLock.Lock()
+	s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] = ne
+	s.mapLock.Unlock()
+}
+
+func (s *Sender) OnDeleteSubscription(sub *unstructured.Unstructured) {
+	s.mapLock.RLock()
+	for _, e := range s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] {
+		e.Stop()
+	}
+	s.mapLock.RUnlock()
+	s.mapLock.Lock()
+	delete(s.events, fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName()))
+	s.mapLock.Unlock()
+}
+
+func (s *Sender) init() {
 }
 
 func (s *Sender) start() {
-	s.running = true
-	s.queueEventsAsync()
+	s.ctx, s.cancel = context.WithCancel(context.TODO())
+	s.mapLock.RLock()
+	for _, subs := range s.events {
+		for _, e := range subs {
+			e.Start()
+		}
+	}
+	s.mapLock.RUnlock()
 	s.sendEventsAsync()
 	s.reportUsageAsync(time.Second)
 }
 
 func (s *Sender) stop() {
-	// Recover from closing already closed channels.
+	// recover from closing already closed channels
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("Recovered from:", r)
+			log.Println("recovered from: ", r)
 		}
 	}()
 
 	s.running = false
 	s.cancel()
-	for _, e := range s.events {
-		e.Stop()
+	s.mapLock.RLock()
+	for _, subs := range s.events {
+		for _, e := range subs {
+			e.Stop()
+		}
 	}
+	s.mapLock.RUnlock()
 	close(s.process)
 	close(s.queue)
 	s.cleanup.Wait()
 }
 
-func (s *Sender) queueEventsAsync() {
-	for _, e := range s.events {
-		go s.queueEvent(e)
-	}
-}
-
 func (s *Sender) sendEventsAsync() {
 	for i := 0; i < s.config.Workers; i++ {
-		go s.sendEvents()
+		go s.sendEvents(i)
 	}
 }
 
 func (s *Sender) reportUsageAsync(d time.Duration) {
-	targetEPS := s.config.ComputeTotalEventsPerSecond()
 
 	go func() {
 		defer func() {
@@ -145,75 +191,68 @@ func (s *Sender) reportUsageAsync(d time.Duration) {
 		t := time.NewTicker(d)
 		defer t.Stop()
 
-		for s.running {
-			<-t.C
-			log.Printf(
-				"legacy events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d |",
-				targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
-			)
-
-			// Reset counts for last report.
-			atomic.StoreInt32(&s.undelivered, 0)
-			atomic.StoreInt32(&s.ack, 0)
-			atomic.StoreInt32(&s.nack, 0)
-		}
-	}()
-}
-
-func (s *Sender) queueEvent(evt events.Event) {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println("Recovered from:", r)
-		}
-		s.cleanup.Done()
-	}()
-
-	s.cleanup.Add(1)
-
-	t := time.NewTicker(time.Second)
-	defer t.Stop()
-
-	// Queue event immediately.
-	for ; s.running; <-t.C {
-		for i := 0; i < evt.Eps; i++ {
-			if !s.running {
+		for {
+			select {
+			case <-s.ctx.Done():
+				targetEPS := s.ComputeTotalEventsPerSecond()
+				log.Printf(
+					"cloud events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d |",
+					targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
+				)
 				return
+			case <-t.C:
+				targetEPS := s.ComputeTotalEventsPerSecond()
+				log.Printf(
+					"legacy events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d |",
+					targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
+				)
+				// reset counts for last report
+				atomic.StoreInt32(&s.undelivered, 0)
+				atomic.StoreInt32(&s.ack, 0)
+				atomic.StoreInt32(&s.nack, 0)
 			}
-			s.queue <- evt
 		}
-	}
+	}()
 }
 
-func (s *Sender) sendEvents() {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println("Recovered from:", r)
+func (s *Sender) sendEvents(id int) {
+	for {
+		cases := []reflect.SelectCase{}
+		s.mapLock.RLock()
+		for _, subs := range s.events {
+			for _, e := range subs {
+				if e.Events() != nil {
+					cases = append(cases, reflect.SelectCase{
+						Dir:  reflect.SelectRecv,
+						Chan: reflect.ValueOf(e.Events()),
+					})
+				}
+			}
 		}
-		s.cleanup.Done()
-	}()
-
-	s.cleanup.Add(1)
-
-	for s.running {
-		e := <-s.queue
-		if !s.running {
-			return
+		s.mapLock.RUnlock()
+		if len(cases) == 0 {
+			time.Sleep(500 * time.Millisecond)
+			continue
 		}
+
+		_, value, ok := reflect.Select(cases)
+		if !ok {
+			continue
+		}
+
+		e := value.Interface().(*GenericEvent.Event)
 		s.process <- true
 		go s.sendEvent(e)
+
 	}
 }
 
-func (s *Sender) sendEvent(evt events.Event) {
-	// Check if the sender is still running.
+func (s *Sender) sendEvent(evt *GenericEvent.Event) {
 	defer func() {
-		if !s.running {
-			return
-		}
 		<-s.process
 	}()
 
-	seq := <-evt.Counter
+	seq := <-evt.Counter()
 
 	// Build a http request out of the legacy event.
 	le := evt.ToLegacyEvent(seq)
@@ -223,7 +262,8 @@ func (s *Sender) sendEvent(evt events.Event) {
 	}
 
 	r := bytes.NewReader(b)
-	rq, err := http.NewRequestWithContext(s.ctx, http.MethodPost, s.endpoint, r)
+	legacyEndpoint := fmt.Sprintf("%s/%s/v1/events", s.config.PublishEndpoint, evt.Source())
+	rq, err := http.NewRequestWithContext(s.ctx, http.MethodPost, legacyEndpoint, r)
 	if err != nil {
 		return
 	}
@@ -233,7 +273,7 @@ func (s *Sender) sendEvent(evt events.Event) {
 	resp, err := s.client.Do(rq)
 	if err != nil {
 		atomic.AddInt32(&s.undelivered, 1)
-		evt.Feedback <- seq
+		evt.Feedback() <- seq
 		return
 	}
 
@@ -245,12 +285,24 @@ func (s *Sender) sendEvent(evt events.Event) {
 	case resp.StatusCode/100 == 2:
 		{
 			atomic.AddInt32(&s.ack, 1)
-			evt.Success <- seq
+			evt.Success() <- seq
 		}
 	default:
 		{
 			atomic.AddInt32(&s.nack, 1)
-			evt.Feedback <- seq
+			evt.Feedback() <- seq
 		}
 	}
+}
+
+func (s *Sender) ComputeTotalEventsPerSecond() int {
+	eps := 0
+	s.mapLock.RLock()
+	for _, subs := range s.events {
+		for _, e := range subs {
+			eps += e.Eps()
+		}
+	}
+	s.mapLock.RUnlock()
+	return eps
 }
