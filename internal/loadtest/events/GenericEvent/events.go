@@ -13,17 +13,20 @@ import (
 )
 
 type Event struct {
-	source        string
-	VersionFormat string
-	EventName     string
-	eps           int
-	Starttime     string
-	feedback      chan int
-	counter       chan int
-	success       chan int
-	events        chan *Event
-	cancel        context.CancelFunc
-	ctx           context.Context
+	source    string
+	version   string
+	EventName string
+	eps       int
+	Starttime string
+	feedback  chan int
+	counter   chan int
+	success   chan int
+	events    chan *Event
+	cancel    context.CancelFunc
+	ctx       context.Context
+	successes *tree.Node
+	eventtype string
+	ce        cev2.Event
 }
 
 func (e *Event) Events() <-chan *Event {
@@ -53,31 +56,35 @@ func (e *Event) Counter() <-chan int {
 
 func NewEvent(format, name, source string, eps int) *Event {
 	e := Event{
-		VersionFormat: format,
-		EventName:     name,
-		eps:           eps,
-		Starttime:     time.Now().Format("2006-01-02T15:04:05"),
-		source:        source,
+		version:   format,
+		EventName: name,
+		eps:       eps,
+		Starttime: time.Now().Format("2006-01-02T15:04:05"),
+		source:    source,
+		eventtype: fmt.Sprintf("%s.%s", name, format),
 	}
+	ce := cev2.NewEvent()
+	ce.SetType(e.eventtype)
+	ce.SetSource(source)
+	e.ce = ce
 	e.Start()
 	return &e
 }
 
 func (e *Event) handleSuccess() {
-	var successes *tree.Node
-	t := time.NewTicker(10 * time.Second)
-
 	for {
 		select {
 		case <-e.ctx.Done():
-			fmt.Printf("%v.%v: %v\n", e.Starttime, e.EventName, successes)
+			fmt.Printf("%v.%v: %v\n", e.Starttime, e.EventName, e.successes)
 			return
 		case val := <-e.success:
-			successes = tree.InsertInt(successes, val)
-		case <-t.C:
-			fmt.Printf("%v.%v.%v: %v\n", e.Starttime, e.EventName, e.VersionFormat, successes)
+			e.successes = tree.InsertInt(e.successes, val)
 		}
 	}
+}
+
+func (e *Event) PrintStats() {
+	fmt.Printf("%v.%v.%v: %v\n", e.Starttime, e.EventName, e.version, e.successes)
 }
 
 func (e *Event) fillCounter() {
@@ -116,7 +123,6 @@ func (e *Event) queueEvent() {
 	for {
 		select {
 		case <-t.C:
-			log.Print(e.eps)
 			for i := 0; i < e.eps; i++ {
 				e.events <- e
 			}
@@ -126,30 +132,6 @@ func (e *Event) queueEvent() {
 		}
 	}
 }
-
-// func Generate(conf *config.Config) []Event {
-// 	count := conf.ComputeEventsCount()
-// 	events := make([]Event, 0, count)
-//
-// 	generate := func(format, name string, start, increment, count int) {
-// 		// for i, Eps := 0, start; i < count; i, Eps = i+1, start+(increment*(i+1)) {
-// 		// 	// event := newEvent(format, name, Eps)
-// 		// 	// events = append(events, event)
-// 		// }
-// 	}
-//
-// 	if conf.IsVersionFormatEmpty() {
-// 		return events
-// 	}
-// 	if !conf.IsEventName0Empty() {
-// 		generate(conf.VersionFormat, conf.EventName0, conf.EpsStart0, conf.EpsIncrement0, conf.GenerateCount0)
-// 	}
-// 	if !conf.IsEventName1Empty() {
-// 		generate(conf.VersionFormat, conf.EventName1, conf.EpsStart1, conf.EpsIncrement1, conf.GenerateCount1)
-// 	}
-//
-// 	return events
-// }
 
 func (e *Event) Stop() {
 	e.cancel()
@@ -161,6 +143,7 @@ func (e *Event) Start() {
 	e.feedback = make(chan int, e.eps*4)
 	e.success = make(chan int, e.eps*4)
 	e.ctx, e.cancel = context.WithCancel(context.Background())
+	e.successes = nil
 	go e.fillCounter()
 	go e.handleSuccess()
 	go e.queueEvent()
@@ -174,29 +157,19 @@ func (e *Event) ToLegacyEvent(seq int) payload.LegacyEvent {
 	return payload.LegacyEvent{
 		Data:             d,
 		EventType:        e.EventName,
-		EventTypeVersion: e.version(),
+		EventTypeVersion: e.version,
 		EventTime:        time.Now().Format("2006-01-02T15:04:05.000Z"),
 		EventTracing:     true,
 	}
 }
 
-func (e *Event) ToCloudEvent(seq int, evtSrc string) (cev2.Event, error) {
-	ce := cev2.NewEvent()
-	ce.SetType(e.EventType())
-	ce.SetSource(evtSrc)
+func (e *Event) ToCloudEvent(seq int) (cev2.Event, error) {
 
-	d := payload.DTO{
-		Start: e.Starttime,
-		Value: seq,
-	}
-	err := ce.SetData(cev2.ApplicationJSON, d)
-	return ce, err
-}
-
-func (e *Event) version() string {
-	return fmt.Sprintf(e.VersionFormat, e.Eps)
-}
-
-func (e *Event) EventType() string {
-	return fmt.Sprintf("%s.%s", e.EventName, e.version())
+	// d := payload.DTO{
+	// 	Start: e.Starttime,
+	// 	Value: seq,
+	// }
+	// err := e.ce.SetData(cev2.ApplicationJSON, d)
+	// return e.ce, err
+	return e.ce, nil
 }

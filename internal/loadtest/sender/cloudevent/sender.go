@@ -40,15 +40,15 @@ type Sender struct {
 	client      client.Client
 	config      *config.Config
 	events      map[string][]*GenericEvent.Event
+	factory     events.EventFactory
 	endpoint    string
 	process     chan bool
-	queue       chan *GenericEvent.Event
 	cleanup     sync.WaitGroup
+	running     bool
 	undelivered int32
 	ack         int32
 	nack        int32
 	mapLock     sync.RWMutex
-	factory     events.EventFactory
 }
 
 func NewSender(conf *config.Config) *Sender {
@@ -58,15 +58,15 @@ func NewSender(conf *config.Config) *Sender {
 	s.nack = 0
 	s.events = make(map[string][]*GenericEvent.Event)
 	s.factory = GenericFactory.New(s)
-	s.queue = make(chan *GenericEvent.Event, buffer)
 
 	return s
 }
 
 func (s *Sender) NotifyAdd(cm *corev1.ConfigMap) {
+	s.stop()
 	config.Map(cm, s.config)
 	t := transport.New(s.config.MaxIdleConns, s.config.MaxConnsPerHost, s.config.MaxIdleConnsPerHost, s.config.IdleConnTimeout)
-	s.client = cloudevents.NewClientOrDie(t.Clone())
+	s.client = cloudevents.NewClientOrDie(t)
 	s.ctx, s.cancel = context.WithCancel(context.TODO())
 	s.process = make(chan bool, s.config.EpsLimit)
 	s.endpoint = fmt.Sprintf("%s/publish", s.config.PublishEndpoint)
@@ -77,7 +77,7 @@ func (s *Sender) NotifyUpdate(cm *corev1.ConfigMap) {
 	s.stop()
 	config.Map(cm, s.config)
 	t := transport.New(s.config.MaxIdleConns, s.config.MaxConnsPerHost, s.config.MaxIdleConnsPerHost, s.config.IdleConnTimeout)
-	s.client = cloudevents.NewClientOrDie(t.Clone())
+	s.client = cloudevents.NewClientOrDie(t)
 	s.ctx, s.cancel = context.WithCancel(context.TODO())
 	s.process = make(chan bool, s.config.EpsLimit)
 	s.endpoint = fmt.Sprintf("%s/publish", s.config.PublishEndpoint)
@@ -110,7 +110,6 @@ func (s *Sender) OnChangedSubscription(sub *unstructured.Unstructured) {
 		e.Stop()
 	}
 	s.mapLock.RUnlock()
-	s.queue = make(chan *GenericEvent.Event, buffer)
 
 	s.mapLock.Lock()
 	s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] = ne
@@ -141,7 +140,8 @@ func (s *Sender) start() {
 	}
 	s.mapLock.RUnlock()
 	s.sendEventsAsync()
-	s.reportUsageAsync(time.Second)
+	s.refillMaxEps(time.Second)
+	s.reportUsageAsync(time.Second, 20*time.Second)
 }
 
 func (s *Sender) stop() {
@@ -152,6 +152,7 @@ func (s *Sender) stop() {
 		}
 	}()
 
+	s.running = false
 	s.cancel()
 	s.mapLock.RLock()
 	for _, subs := range s.events {
@@ -161,7 +162,6 @@ func (s *Sender) stop() {
 	}
 	s.mapLock.RUnlock()
 	close(s.process)
-	close(s.queue)
 	s.cleanup.Wait()
 }
 
@@ -171,7 +171,7 @@ func (s *Sender) sendEventsAsync() {
 	}
 }
 
-func (s *Sender) reportUsageAsync(d time.Duration) {
+func (s *Sender) reportUsageAsync(send, success time.Duration) {
 
 	go func() {
 		defer func() {
@@ -180,8 +180,10 @@ func (s *Sender) reportUsageAsync(d time.Duration) {
 
 		s.cleanup.Add(1)
 
-		t := time.NewTicker(d)
-		defer t.Stop()
+		sendt := time.NewTicker(send)
+		defer sendt.Stop()
+		succt := time.NewTicker(success)
+		defer succt.Stop()
 
 		for {
 			select {
@@ -192,8 +194,11 @@ func (s *Sender) reportUsageAsync(d time.Duration) {
 					targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
 				)
 				return
-			case <-t.C:
+			case <-sendt.C:
 				targetEPS := s.ComputeTotalEventsPerSecond()
+				if targetEPS == 0 {
+					continue
+				}
 				log.Printf(
 					"cloud events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d |",
 					targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
@@ -202,6 +207,14 @@ func (s *Sender) reportUsageAsync(d time.Duration) {
 				atomic.StoreInt32(&s.undelivered, 0)
 				atomic.StoreInt32(&s.ack, 0)
 				atomic.StoreInt32(&s.nack, 0)
+			case <-succt.C:
+				s.mapLock.RLock()
+				for _, subs := range s.events {
+					for _, e := range subs {
+						e.PrintStats()
+					}
+				}
+				s.mapLock.RUnlock()
 			}
 		}
 	}()
@@ -233,25 +246,22 @@ func (s *Sender) sendEvents(id int) {
 		}
 
 		e := value.Interface().(*GenericEvent.Event)
-		s.process <- true
+		<-s.process
 		go s.sendEvent(e)
 
 	}
 }
 
 func (s *Sender) sendEvent(evt *GenericEvent.Event) {
-	defer func() {
-		<-s.process
-	}()
 
 	seq := <-evt.Counter()
 
-	ce, err := evt.ToCloudEvent(seq, s.config.EventSource)
+	ce, err := evt.ToCloudEvent(seq)
 	if err != nil {
 		return
 	}
 
-	ctx := cev2.ContextWithTarget(s.ctx, s.endpoint)
+	ctx := cev2.WithEncodingStructured(cev2.ContextWithTarget(s.ctx, s.endpoint))
 	resp := s.client.Send(ctx, ce)
 	switch {
 	case cev2.IsUndelivered(resp):
@@ -282,4 +292,26 @@ func (s *Sender) ComputeTotalEventsPerSecond() int {
 	}
 	s.mapLock.RUnlock()
 	return eps
+}
+
+func (s *Sender) refillMaxEps(d time.Duration) {
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Recovered in refillMaxEps", r)
+			}
+		}()
+
+		t := time.NewTicker(d)
+		for {
+			select {
+			case <-t.C:
+				for i := 0; i < s.config.EpsLimit; i++ {
+					s.process <- true
+				}
+			case <-s.ctx.Done():
+				return
+			}
+		}
+	}()
 }
