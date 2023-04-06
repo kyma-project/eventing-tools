@@ -93,39 +93,45 @@ func (s *Sender) NotifyDelete(*corev1.ConfigMap) {
 
 func (s *Sender) OnNewSubscription(sub *unstructured.Unstructured) {
 	log.Printf("Starting Legacy Event Sender")
-	e := s.factory.FromSubscription(sub, events.LegacyFormat)
-	if len(e) == 0 {
-		return
-	}
-	// s.queue = make(chan events.Event, buffer)
-	s.mapLock.Lock()
-	s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] = e
-	s.mapLock.Unlock()
-}
-
-func (s *Sender) OnChangedSubscription(sub *unstructured.Unstructured) {
 	ne := s.factory.FromSubscription(sub, events.LegacyFormat)
 	if len(ne) == 0 {
 		return
 	}
-	s.mapLock.RLock()
+	// s.queue = make(chan events.Event, buffer)
+	for _, e := range ne {
+		e.Start()
+	}
+	s.mapLock.Lock()
+	s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] = ne
+	s.mapLock.Unlock()
+}
+
+func (s *Sender) OnChangedSubscription(sub *unstructured.Unstructured) {
+	s.mapLock.Lock()
 	for _, e := range s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] {
 		e.Stop()
 	}
-	s.mapLock.RUnlock()
+	delete(s.events, fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName()))
+	s.mapLock.Unlock()
 
+	ne := s.factory.FromSubscription(sub, events.LegacyFormat)
+	if len(ne) == 0 {
+		return
+	}
+
+	for _, e := range ne {
+		e.Start()
+	}
 	s.mapLock.Lock()
 	s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] = ne
 	s.mapLock.Unlock()
 }
 
 func (s *Sender) OnDeleteSubscription(sub *unstructured.Unstructured) {
-	s.mapLock.RLock()
+	s.mapLock.Lock()
 	for _, e := range s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] {
 		e.Stop()
 	}
-	s.mapLock.RUnlock()
-	s.mapLock.Lock()
 	delete(s.events, fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName()))
 	s.mapLock.Unlock()
 }
@@ -154,9 +160,6 @@ func (s *Sender) stop() {
 			log.Println("recovered from: ", r)
 		}
 	}()
-
-	s.running = false
-	s.cancel()
 	s.mapLock.RLock()
 	for _, subs := range s.events {
 		for _, e := range subs {
@@ -164,6 +167,9 @@ func (s *Sender) stop() {
 		}
 	}
 	s.mapLock.RUnlock()
+
+	s.running = false
+	s.cancel()
 	close(s.process)
 	s.cleanup.Wait()
 }

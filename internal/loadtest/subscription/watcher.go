@@ -138,7 +138,7 @@ func (w *Watcher) updateFunc(o interface{}, n interface{}) {
 		return
 	}
 
-	if !reflect.DeepEqual(ou.Object["spec"], nu.Object["spec"]) {
+	if !reflect.DeepEqual(ou.Object, nu.Object) {
 		for _, n := range w.updateNotifiableList {
 			n.OnChangedSubscription(nu)
 		}
