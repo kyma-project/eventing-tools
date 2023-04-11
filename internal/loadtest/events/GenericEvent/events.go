@@ -29,6 +29,7 @@ type Event struct {
 	ce        cev2.Event
 	wg        *sync.WaitGroup
 	running   bool
+	stopper   sync.Mutex
 }
 
 func (e *Event) Events() <-chan *Event {
@@ -79,6 +80,7 @@ func (e *Event) handleSuccess(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			fmt.Printf("%v.%v: %v\n", e.Starttime, e.EventName, e.successes)
+			fmt.Printf("DONE success %v.%v\n", e.source, e.eventtype)
 			return
 		case val := <-e.success:
 			e.successes = tree.InsertInt(e.successes, val)
@@ -87,28 +89,28 @@ func (e *Event) handleSuccess(ctx context.Context) {
 }
 
 func (e *Event) PrintStats() {
-	fmt.Printf("%v.%v.%v: %v\n", e.Starttime, e.EventName, e.version, e.successes)
+	fmt.Printf("%v.%v.%v.%v: %v\n", e.Starttime, e.source, e.EventName, e.version, e.successes)
 }
 
 func (e *Event) fillCounter(ctx context.Context) {
 	defer e.wg.Done()
 	var c int
-	var cur int
-	list := make([]int, 0)
+	var next int
 	for {
 		select {
-		case <-ctx.Done():
-			return
-		case val := <-e.feedback:
-			list = append(list, val)
+		case next = <-e.feedback:
+			break
 		default:
-			if len(list) > 0 {
-				cur, list = list[0], list[1:]
-				e.counter <- cur
-				continue
-			}
-			e.counter <- c
+			next = c
 			c++
+		}
+		select {
+		case <-ctx.Done():
+			fmt.Printf("DONE counter %v.%v\n", e.source, e.eventtype)
+			return
+		case e.counter <- next:
+			break
+
 		}
 	}
 }
@@ -132,22 +134,31 @@ func (e *Event) queueEvent(ctx context.Context) {
 				select {
 				case <-ctx.Done():
 					close(e.events)
+					fmt.Printf("DONE queue %v.%v\n", e.source, e.eventtype)
 					return
-				default:
-					e.events <- e
+				case e.events <- e:
+					continue
 				}
 			}
 		case <-ctx.Done():
 			close(e.events)
+			fmt.Printf("DONE queue %v.%v\n", e.source, e.eventtype)
 			return
 		}
 	}
 }
 
 func (e *Event) Stop() {
+	e.stopper.Lock()
+	if !e.running {
+		return
+	}
 	e.cancel()
+	fmt.Printf("waiting for %v.%v\n", e.source, e.eventtype)
 	e.wg.Wait()
+	fmt.Printf("DONE waiting for %v.%v\n", e.source, e.eventtype)
 	e.running = false
+	e.stopper.Unlock()
 }
 
 func (e *Event) Start() {

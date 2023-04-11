@@ -7,6 +7,8 @@ import (
 	validationtestpublisher "github.com/kyma-project/eventing-tools/internal/validationtest/publisher"
 )
 
+var publisherPort int
+
 // publisherCmd represents the publisher command
 var publisherCmd = &cobra.Command{
 	Use:   "publisher",
@@ -14,7 +16,7 @@ var publisherCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		switch loadtest {
 		case true:
-			loadtestpublisher.Start()
+			loadtestpublisher.Start(publisherPort)
 		case false:
 			validationtestpublisher.Start()
 		}
@@ -22,5 +24,6 @@ var publisherCmd = &cobra.Command{
 }
 
 func init() {
+	publisherCmd.Flags().IntVarP(&publisherPort, "listen-port", "p", 8888, "listen on port (health check, control commands)")
 	rootCmd.AddCommand(publisherCmd)
 }

@@ -24,16 +24,11 @@ import (
 	"github.com/kyma-project/eventing-tools/internal/loadtest/subscription"
 )
 
-const (
-	// buffer the event types to be sent by workers.
-	buffer = 1_000_000
-)
-
 // compile-time check for interfaces implementation.
 var _ sender.Sender = &Sender{}
 var _ subscription.Notifiable = &Sender{}
 
-// Sender sends legacy events.
+// Sender sends cloud events.
 type Sender struct {
 	ctx         context.Context
 	cancel      context.CancelFunc
@@ -43,12 +38,13 @@ type Sender struct {
 	factory     events.EventFactory
 	endpoint    string
 	process     chan bool
-	cleanup     sync.WaitGroup
 	running     bool
 	undelivered int32
 	ack         int32
 	nack        int32
 	mapLock     sync.RWMutex
+	wg          sync.WaitGroup
+	stopper     sync.Mutex
 }
 
 func NewSender(conf *config.Config) *Sender {
@@ -57,12 +53,14 @@ func NewSender(conf *config.Config) *Sender {
 	s.ack = 0
 	s.nack = 0
 	s.events = make(map[string][]*GenericEvent.Event)
-	s.factory = GenericFactory.New(s)
+	s.factory = GenericFactory.New()
 
 	return s
 }
 
 func (s *Sender) NotifyAdd(cm *corev1.ConfigMap) {
+	s.stopper.Lock()
+	defer s.stopper.Unlock()
 	s.stop()
 	config.Map(cm, s.config)
 	t := transport.New(s.config.MaxIdleConns, s.config.MaxConnsPerHost, s.config.MaxIdleConnsPerHost, s.config.IdleConnTimeout)
@@ -74,6 +72,8 @@ func (s *Sender) NotifyAdd(cm *corev1.ConfigMap) {
 }
 
 func (s *Sender) NotifyUpdate(cm *corev1.ConfigMap) {
+	s.stopper.Lock()
+	defer s.stopper.Unlock()
 	s.stop()
 	config.Map(cm, s.config)
 	t := transport.New(s.config.MaxIdleConns, s.config.MaxConnsPerHost, s.config.MaxIdleConnsPerHost, s.config.IdleConnTimeout)
@@ -85,33 +85,51 @@ func (s *Sender) NotifyUpdate(cm *corev1.ConfigMap) {
 }
 
 func (s *Sender) NotifyDelete(*corev1.ConfigMap) {
+	s.stopper.Lock()
+	defer s.stopper.Unlock()
 	s.stop()
 }
 
-func (s *Sender) OnNewSubscription(sub *unstructured.Unstructured) {
-	log.Printf("Starting Cloud Event Sender")
-	ne := s.factory.FromSubscription(sub, events.CloudeventFormat)
+func (s *Sender) OnNewSubscription(subscription *unstructured.Unstructured) {
+	if subscription.GetDeletionTimestamp() != nil {
+		return
+	}
+	fmt.Print(subscription)
+	ne := s.factory.FromSubscription(subscription, events.CloudeventFormat)
 	if len(ne) == 0 {
 		return
 	}
+	s.stopper.Lock()
+	defer s.stopper.Unlock()
+
+	log.Printf("Starting Cloud Event Sender")
+	defer log.Println("done starting")
+
 	// s.queue = make(chan events.Event, buffer)
 	for _, e := range ne {
 		e.Start()
 	}
 	s.mapLock.Lock()
-	s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] = ne
-	s.mapLock.Unlock()
+	defer s.mapLock.Unlock()
+	s.events[fmt.Sprintf("%v/%v", subscription.GetNamespace(), subscription.GetName())] = ne
 }
 
-func (s *Sender) OnChangedSubscription(sub *unstructured.Unstructured) {
-	s.mapLock.Lock()
-	for _, e := range s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] {
+func (s *Sender) OnChangedSubscription(subscription *unstructured.Unstructured) {
+	if subscription.GetDeletionTimestamp() != nil {
+		return
+	}
+	s.stopper.Lock()
+	defer s.stopper.Unlock()
+	log.Printf("updating Cloud Event Sender")
+	defer log.Println("done updating")
+	for _, e := range s.events[fmt.Sprintf("%v/%v", subscription.GetNamespace(), subscription.GetName())] {
 		e.Stop()
 	}
-	delete(s.events, fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName()))
-	s.mapLock.Unlock()
+	s.mapLock.Lock()
+	defer s.mapLock.Unlock()
+	delete(s.events, fmt.Sprintf("%v/%v", subscription.GetNamespace(), subscription.GetName()))
 
-	ne := s.factory.FromSubscription(sub, events.CloudeventFormat)
+	ne := s.factory.FromSubscription(subscription, events.CloudeventFormat)
 	if len(ne) == 0 {
 		return
 	}
@@ -119,20 +137,18 @@ func (s *Sender) OnChangedSubscription(sub *unstructured.Unstructured) {
 	for _, e := range ne {
 		e.Start()
 	}
-	s.mapLock.Lock()
-	s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] = ne
-	s.mapLock.Unlock()
+	s.events[fmt.Sprintf("%v/%v", subscription.GetNamespace(), subscription.GetName())] = ne
 }
 
 func (s *Sender) OnDeleteSubscription(sub *unstructured.Unstructured) {
-	s.mapLock.RLock()
+	s.stopper.Lock()
+	s.mapLock.Lock()
+	defer s.mapLock.Unlock()
+	defer s.stopper.Unlock()
 	for _, e := range s.events[fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName())] {
 		e.Stop()
 	}
-	s.mapLock.RUnlock()
-	s.mapLock.Lock()
 	delete(s.events, fmt.Sprintf("%v/%v", sub.GetNamespace(), sub.GetName()))
-	s.mapLock.Unlock()
 }
 
 func (s *Sender) init() {
@@ -148,8 +164,10 @@ func (s *Sender) start() {
 	}
 	s.mapLock.RUnlock()
 	s.sendEventsAsync()
-	s.refillMaxEps(time.Second)
-	s.reportUsageAsync(time.Second, 20*time.Second)
+	s.wg.Add(1)
+	go s.refillMaxEps(time.Second)
+	s.wg.Add(1)
+	go s.reportUsageAsync(time.Second, 20*time.Second)
 }
 
 func (s *Sender) stop() {
@@ -170,67 +188,64 @@ func (s *Sender) stop() {
 	s.running = false
 	s.cancel()
 	close(s.process)
-	s.cleanup.Wait()
+	s.wg.Wait()
 }
 
 func (s *Sender) sendEventsAsync() {
 	for i := 0; i < s.config.Workers; i++ {
-		go s.sendEvents(i)
+		s.wg.Add(1)
+		go s.sendEvents()
 	}
 }
 
 func (s *Sender) reportUsageAsync(send, success time.Duration) {
 
-	go func() {
-		defer func() {
-			s.cleanup.Done()
-		}()
-
-		s.cleanup.Add(1)
-
-		sendt := time.NewTicker(send)
-		defer sendt.Stop()
-		succt := time.NewTicker(success)
-		defer succt.Stop()
-
-		for {
-			select {
-			case <-s.ctx.Done():
-				targetEPS := s.ComputeTotalEventsPerSecond()
-				log.Printf(
-					"cloud events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d |",
-					targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
-				)
-				return
-			case <-sendt.C:
-				targetEPS := s.ComputeTotalEventsPerSecond()
-				if targetEPS == 0 {
-					continue
-				}
-				log.Printf(
-					"cloud events: | eps:%04d | undelivered:%04d | ack:%04d | nack:%04d | sum:%04d |",
-					targetEPS, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
-				)
-				// reset counts for last report
-				atomic.StoreInt32(&s.undelivered, 0)
-				atomic.StoreInt32(&s.ack, 0)
-				atomic.StoreInt32(&s.nack, 0)
-			case <-succt.C:
-				s.mapLock.RLock()
-				for _, subs := range s.events {
-					for _, e := range subs {
-						e.PrintStats()
-					}
-				}
-				s.mapLock.RUnlock()
-			}
-		}
+	defer func() {
+		s.wg.Done()
 	}()
+
+	sendt := time.NewTicker(send)
+	defer sendt.Stop()
+	succt := time.NewTicker(success)
+	defer succt.Stop()
+
+	for {
+		select {
+		case <-s.ctx.Done():
+			targetEPS := s.ComputeTotalEventsPerSecond()
+			log.Printf(
+				"cloud events: | target_eps:% 4d (% 4d) | undelivered:% 4d | ack:% 4d | nack:% 4d | sum:% 4d |",
+				targetEPS, s.config.EpsLimit, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
+			)
+			return
+		case <-sendt.C:
+			targetEPS := s.ComputeTotalEventsPerSecond()
+			if targetEPS == 0 {
+				continue
+			}
+			log.Printf(
+				"cloud events: | target_eps:% 4d (% 4d)| undelivered:% 4d | ack:% 4d | nack:% 4d | sum:% 4d |",
+				targetEPS, s.config.EpsLimit, s.undelivered, s.ack, s.nack, s.undelivered+s.ack+s.nack,
+			)
+			// reset counts for last report
+			atomic.StoreInt32(&s.undelivered, 0)
+			atomic.StoreInt32(&s.ack, 0)
+			atomic.StoreInt32(&s.nack, 0)
+		case <-succt.C:
+			s.mapLock.RLock()
+			for _, subs := range s.events {
+				for _, e := range subs {
+					e.PrintStats()
+				}
+			}
+			s.mapLock.RUnlock()
+		}
+	}
 }
 
-func (s *Sender) sendEvents(id int) {
+func (s *Sender) sendEvents() {
 	for {
-		cases := []reflect.SelectCase{}
+		var cases []reflect.SelectCase
 		s.mapLock.RLock()
 		for _, subs := range s.events {
 			for _, e := range subs {
@@ -256,7 +271,6 @@ func (s *Sender) sendEvents(id int) {
 		e := value.Interface().(*GenericEvent.Event)
 		<-s.process
 		go s.sendEvent(e)
-
 	}
 }
 
@@ -303,23 +317,21 @@ func (s *Sender) ComputeTotalEventsPerSecond() int {
 }
 
 func (s *Sender) refillMaxEps(d time.Duration) {
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Println("Recovered in refillMaxEps", r)
-			}
-		}()
-
-		t := time.NewTicker(d)
-		for {
-			select {
-			case <-t.C:
-				for i := 0; i < s.config.EpsLimit; i++ {
-					s.process <- true
-				}
-			case <-s.ctx.Done():
-				return
-			}
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in refillMaxEps", r)
 		}
 	}()
+
+	t := time.NewTicker(d)
+	for {
+		select {
+		case <-t.C:
+			for i := 0; i < s.config.EpsLimit; i++ {
+				s.process <- true
+			}
+		case <-s.ctx.Done():
+			return
+		}
+	}
 }

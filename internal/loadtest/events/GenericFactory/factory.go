@@ -10,7 +10,6 @@ import (
 
 	"github.com/kyma-project/eventing-tools/internal/loadtest/api/subscription/v1alpha2"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/events/GenericEvent"
-	"github.com/kyma-project/eventing-tools/internal/loadtest/sender"
 )
 
 type GenericEventFactory struct {
@@ -20,7 +19,7 @@ const (
 	formatLabel = "eventing-loadtest"
 )
 
-func New(sender sender.Sender) *GenericEventFactory {
+func New() *GenericEventFactory {
 	return &GenericEventFactory{}
 }
 
@@ -33,6 +32,9 @@ func (g *GenericEventFactory) FromSubscription(subscription *unstructured.Unstru
 
 	// for now we support only type matching standard
 	if sub.Spec.TypeMatching != v1alpha2.Standard {
+		return events
+	}
+	if !sub.Status.Ready {
 		return events
 	}
 

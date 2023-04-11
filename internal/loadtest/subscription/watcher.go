@@ -2,6 +2,7 @@ package subscription
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
@@ -59,8 +60,7 @@ func (w *Watcher) start() {
 			o.LabelSelector = loadtestLabel
 		},
 	)
-	si := factory.ForResource(v1alpha2.GroupVersion.WithResource(v1alpha2.Resource))
-	subInf := si.Informer()
+	subInf := factory.ForResource(v1alpha2.GroupVersion.WithResource(v1alpha2.Resource)).Informer()
 	_, err := subInf.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    w.addFunc,
 		UpdateFunc: w.updateFunc,
@@ -70,7 +70,11 @@ func (w *Watcher) start() {
 		runtime.HandleError(err)
 	}
 
-	subInf.Run(w.stopCh)
+	go subInf.Run(w.stopCh)
+	isSynced := cache.WaitForCacheSync(w.stopCh, subInf.HasSynced)
+	if !isSynced {
+		log.Fatal("failed to sync")
+	}
 }
 
 func (w *Watcher) stop() {

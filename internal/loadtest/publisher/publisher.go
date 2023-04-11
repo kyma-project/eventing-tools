@@ -1,6 +1,7 @@
 package publisher
 
 import (
+	"fmt"
 	"net/http"
 
 	"k8s.io/client-go/dynamic"
@@ -15,7 +16,7 @@ import (
 	"github.com/kyma-project/eventing-tools/internal/probes"
 )
 
-func Start() {
+func Start(port int) {
 	appConfig := config.New()
 	k8sConfig := k8s.ConfigOrDie()
 	k8sClient := k8s.ClientOrDie(k8sConfig)
@@ -23,7 +24,6 @@ func Start() {
 
 	legacyEventSender := legacyevent.NewSender(appConfig)
 	cloudEventSender := cloudevent.NewSender(appConfig)
-	// infraInstance := infra.New(appConfig, k8sConfig)
 
 	config.NewWatcher(k8sClient, infra.Namespace, infra.ConfigMapName).
 		// OnAddNotify(infraInstance).
@@ -45,10 +45,9 @@ func Start() {
 		OnAddNotify(legacyEventSender).
 		OnUpdateNotify(legacyEventSender).
 		OnDeleteNotify(legacyEventSender).
-		OnDeleteNotifyMe().
 		Watch()
 
 	http.HandleFunc(probes.EndpointReadyz, probes.DefaultHandler)
 	http.HandleFunc(probes.EndpointHealthz, probes.DefaultHandler)
-	logger.LogIfError(http.ListenAndServe(appConfig.ServerAddress, nil))
+	logger.LogIfError(http.ListenAndServe(fmt.Sprintf(":%v", port), nil))
 }
