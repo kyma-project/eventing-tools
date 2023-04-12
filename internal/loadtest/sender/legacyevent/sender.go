@@ -16,13 +16,10 @@ import (
 
 var _ sender.Sender = &Sender{}
 
-const format = events.LegacyFormat
-
 // Sender sends legacy events.
 type Sender struct {
 	client *http.Client
 	config *config.Config
-	ctx    context.Context
 }
 
 func (s *Sender) Init(t *http.Transport, cfg *config.Config) {

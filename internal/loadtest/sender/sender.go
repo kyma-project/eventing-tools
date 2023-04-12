@@ -9,7 +9,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/cloudevents/sdk-go/v2/client"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -28,11 +27,9 @@ var _ subscription.Notifiable = &EventSender{}
 type EventSender struct {
 	ctx                       context.Context
 	cancel                    context.CancelFunc
-	client                    client.Client
 	config                    *config.Config
 	events                    map[string][]*GenericEvent.Event
 	factory                   events.EventFactory
-	endpoint                  string
 	process                   chan bool
 	running                   bool
 	undelivered               int32

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"sync"
 
 	cev2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
@@ -21,21 +20,8 @@ var _ sender.Sender = &Sender{}
 
 // Sender sends cloud events.
 type Sender struct {
-	ctx         context.Context
-	cancel      context.CancelFunc
-	client      client.Client
-	config      *config.Config
-	events      map[string][]*GenericEvent.Event
-	factory     events.EventFactory
-	endpoint    string
-	process     chan bool
-	running     bool
-	undelivered int32
-	ack         int32
-	nack        int32
-	mapLock     sync.RWMutex
-	wg          sync.WaitGroup
-	stopper     sync.Mutex
+	client client.Client
+	config *config.Config
 }
 
 func (s *Sender) Format() string {
