@@ -2,7 +2,6 @@ package subscription
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"time"
 
@@ -70,11 +69,7 @@ func (w *Watcher) start() {
 		runtime.HandleError(err)
 	}
 
-	go subInf.Run(w.stopCh)
-	isSynced := cache.WaitForCacheSync(w.stopCh, subInf.HasSynced)
-	if !isSynced {
-		log.Fatal("failed to sync")
-	}
+	factory.Start(w.stopCh)
 }
 
 func (w *Watcher) stop() {
@@ -142,7 +137,9 @@ func (w *Watcher) updateFunc(o interface{}, n interface{}) {
 		return
 	}
 
-	if !reflect.DeepEqual(ou.Object, nu.Object) {
+	labelsChanged := !reflect.DeepEqual(ou.GetLabels(), nu.GetLabels())
+	specChanged := !reflect.DeepEqual(ou.Object["spec"], nu.Object["spec"])
+	if labelsChanged || specChanged {
 		for _, n := range w.updateNotifiableList {
 			n.OnChangedSubscription(nu)
 		}

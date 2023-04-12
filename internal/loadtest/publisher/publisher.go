@@ -9,6 +9,7 @@ import (
 	"github.com/kyma-project/eventing-tools/internal/k8s"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/infra"
+	sender2 "github.com/kyma-project/eventing-tools/internal/loadtest/sender"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/sender/cloudevent"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/sender/legacyevent"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/subscription"
@@ -23,28 +24,31 @@ func Start(port int) {
 	dynamicClient := dynamic.NewForConfigOrDie(k8sConfig)
 
 	legacyEventSender := legacyevent.NewSender(appConfig)
+	legacySender := sender2.NewSender(appConfig, legacyEventSender)
+
 	cloudEventSender := cloudevent.NewSender(appConfig)
+	cloudSender := sender2.NewSender(appConfig, cloudEventSender)
 
 	config.NewWatcher(k8sClient, infra.Namespace, infra.ConfigMapName).
 		// OnAddNotify(infraInstance).
 		// OnUpdateNotify(infraInstance).
 		// OnDeleteNotify(infraInstance).
-		OnAddNotify(legacyEventSender).
-		OnUpdateNotify(legacyEventSender).
-		OnDeleteNotify(legacyEventSender).
-		OnAddNotify(cloudEventSender).
-		OnUpdateNotify(cloudEventSender).
-		OnDeleteNotify(cloudEventSender).
+		OnAddNotify(legacySender).
+		OnUpdateNotify(legacySender).
+		OnDeleteNotify(legacySender).
+		OnAddNotify(cloudSender).
+		OnUpdateNotify(cloudSender).
+		OnDeleteNotify(cloudSender).
 		OnDeleteNotifyMe().
 		Watch()
 
 	subscription.NewWatcher(dynamicClient).
-		OnAddNotify(cloudEventSender).
-		OnUpdateNotify(cloudEventSender).
-		OnDeleteNotify(cloudEventSender).
-		OnAddNotify(legacyEventSender).
-		OnUpdateNotify(legacyEventSender).
-		OnDeleteNotify(legacyEventSender).
+		OnAddNotify(cloudSender).
+		OnUpdateNotify(cloudSender).
+		OnDeleteNotify(cloudSender).
+		OnAddNotify(legacySender).
+		OnUpdateNotify(legacySender).
+		OnDeleteNotify(legacySender).
 		Watch()
 
 	http.HandleFunc(probes.EndpointReadyz, probes.DefaultHandler)

@@ -34,9 +34,6 @@ func (g *GenericEventFactory) FromSubscription(subscription *unstructured.Unstru
 	if sub.Spec.TypeMatching != v1alpha2.Standard {
 		return events
 	}
-	if !sub.Status.Ready {
-		return events
-	}
 
 	if sub.GetLabels()[formatLabel] != eventFormat {
 		return events
