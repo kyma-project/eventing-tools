@@ -16,9 +16,9 @@ import (
 type Event struct {
 	source    string
 	version   string
-	EventName string
+	name      string
 	eps       int
-	Starttime string
+	starttime string
 	feedback  chan int
 	counter   chan int
 	success   chan int
@@ -60,9 +60,9 @@ func (e *Event) Counter() <-chan int {
 func NewEvent(format, name, source string, eps int) *Event {
 	e := Event{
 		version:   format,
-		EventName: name,
+		name:      name,
 		eps:       eps,
-		Starttime: time.Now().Format("2006-01-02T15:04:05"),
+		starttime: time.Now().Format("2006-01-02T15:04:05"),
 		source:    source,
 		eventtype: fmt.Sprintf("%s.%s", name, format),
 		wg:        &sync.WaitGroup{},
@@ -79,7 +79,7 @@ func (e *Event) handleSuccess(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Printf("%v.%v: %v\n", e.Starttime, e.EventName, e.successes)
+			fmt.Printf("%v.%v: %v\n", e.starttime, e.name, e.successes)
 			fmt.Printf("DONE success %v.%v\n", e.source, e.eventtype)
 			return
 		case val := <-e.success:
@@ -89,7 +89,7 @@ func (e *Event) handleSuccess(ctx context.Context) {
 }
 
 func (e *Event) PrintStats() {
-	fmt.Printf("%v.%v.%v.%v: %v\n", e.Starttime, e.source, e.EventName, e.version, e.successes)
+	fmt.Printf("%v.%v.%v.%v: %v\n", e.starttime, e.source, e.name, e.version, e.successes)
 }
 
 func (e *Event) fillCounter(ctx context.Context) {
@@ -183,12 +183,12 @@ func (e *Event) Start() {
 
 func (e *Event) ToLegacyEvent(seq int) payload.LegacyEvent {
 	d := payload.DTO{
-		Start: e.Starttime,
+		Start: e.starttime,
 		Value: seq,
 	}
 	return payload.LegacyEvent{
 		Data:             d,
-		EventType:        e.EventName,
+		EventType:        e.name,
 		EventTypeVersion: e.version,
 		EventTime:        time.Now().Format("2006-01-02T15:04:05.000Z"),
 		EventTracing:     true,
@@ -198,7 +198,7 @@ func (e *Event) ToLegacyEvent(seq int) payload.LegacyEvent {
 func (e *Event) ToCloudEvent(seq int) (cev2.Event, error) {
 
 	d := payload.DTO{
-		Start: e.Starttime,
+		Start: e.starttime,
 		Value: seq,
 	}
 	err := e.ce.SetData(cev2.ApplicationJSON, d)
