@@ -83,8 +83,8 @@ func (e *Event) handleSuccess(ctx context.Context) {
 	}
 }
 
-func (e *Event) PrintStats() {
-	fmt.Printf("%v.%v.%v.%v: %v\n", e.starttime, e.source, e.name, e.version, e.successes)
+func (e *Event) PrintStats() string {
+	return fmt.Sprintf("%v.%v.%v.%v: %v\n", e.starttime, e.source, e.name, e.version, e.successes)
 }
 
 func (e *Event) fillCounter(ctx context.Context) {

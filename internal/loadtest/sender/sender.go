@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -233,11 +234,13 @@ func (s *EventSender) reportUsageAsync(send, success time.Duration) {
 			atomic.StoreInt32(&s.nack, 0)
 		case <-succt.C:
 			s.mapLock.RLock()
+			stats := []string{fmt.Sprintf("%v:", s.sender.Format())}
 			for _, subs := range s.events {
 				for _, e := range subs {
-					e.PrintStats()
+					stats = append(stats, e.PrintStats())
 				}
 			}
+			fmt.Println(strings.Join(stats, "\n\t"))
 			s.mapLock.RUnlock()
 		}
 	}
