@@ -26,7 +26,6 @@ type Event struct {
 	cancel    context.CancelFunc
 	successes *tree.Node
 	eventtype string
-	ce        cev2.Event
 	wg        *sync.WaitGroup
 	running   bool
 	stopper   sync.Mutex
@@ -67,10 +66,6 @@ func NewEvent(format, name, source string, eps int) *Event {
 		eventtype: fmt.Sprintf("%s.%s", name, format),
 		wg:        &sync.WaitGroup{},
 	}
-	ce := cev2.NewEvent()
-	ce.SetType(e.eventtype)
-	ce.SetSource(source)
-	e.ce = ce
 	return &e
 }
 
@@ -110,7 +105,6 @@ func (e *Event) fillCounter(ctx context.Context) {
 			return
 		case e.counter <- next:
 			break
-
 		}
 	}
 }
@@ -197,10 +191,13 @@ func (e *Event) ToLegacyEvent(seq int) payload.LegacyEvent {
 
 func (e *Event) ToCloudEvent(seq int) (cev2.Event, error) {
 
+	ce := cev2.NewEvent()
+	ce.SetType(e.eventtype)
+	ce.SetSource(e.source)
 	d := payload.DTO{
 		Start: e.starttime,
 		Value: seq,
 	}
-	err := e.ce.SetData(cev2.ApplicationJSON, d)
-	return e.ce, err
+	err := ce.SetData(cev2.ApplicationJSON, d)
+	return ce, err
 }

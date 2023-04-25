@@ -3,8 +3,7 @@ module github.com/kyma-project/eventing-tools
 go 1.19
 
 require (
-	github.com/avast/retry-go/v3 v3.1.1
-	github.com/cloudevents/sdk-go/v2 v2.13.0
+	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/spf13/cobra v1.6.1
