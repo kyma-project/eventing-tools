@@ -8,14 +8,14 @@ Ideally, it should be used when JetStream is used as the active Eventing backend
 ## Subscriptions
 
 The publisher watches all subscriptions in the cluster.
-To activate sending events for one subscription you have to label that subscription with one of these labels:
+To activate sending events for one subscription, you must label that subscription with one of the following labels:
 - eventing-loadtest: legacy 
 - eventing-loadtest: cloudevent
 
-The load tester will then create events using the event types configured in the subscription and send them with the format configured in the label.
+After you configured the event type in the label, the load tester creates events accordingly and sends them with the format configured in the label.
 
-The load generated per event type will be extracted from the event type. To do this the event type must match the following pattern:
-`<event-name>.v<Number of events per second>`, eg. `order.created.v500` will create events of type order.create.v500 and the sender will try to publish 500 events per second.
+The load generated per event type is extracted from the event type. To do this, the event type must match the following pattern:
+`<event-name>.v<Number of events per second>`. For example, `order.created.v500` creates events of type order.create.v500 and the sender tries to publish 500 events per second.
 
 > Note: Encoding the EPS in the event type version is used only for debugging purposes and is not a production use-case.
 
