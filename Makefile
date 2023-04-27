@@ -6,6 +6,10 @@
 loadtest-deploy:
 	@kubectl apply -k resources/loadtest/base
 
+.PHONY: loadtest-deploy-ko
+loadtest-deploy-ko:
+	@kustomize build resources/loadtest/ko | ko apply -f - 
+
 .PHONY: loadtest-start
 loadtest-start:
 	@kubectl scale deployment -n eventing-test loadtest-publisher --replicas 1
