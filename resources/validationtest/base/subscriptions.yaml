@@ -14,7 +14,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+          value: sap.kyma.custom.commerce.order.created.v1
       - eventSource:
           property: source
           type: exact
@@ -22,7 +22,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+          value: sap.kyma.custom.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
       - eventSource:
           property: source
           type: exact
@@ -30,7 +30,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+          value: sap.kyma.custom.appname.DocuSing_BO.Account_DocuSign.Updated.v1
   protocol: ""
   protocolsettings:
     exemptHandshake: true
@@ -53,7 +53,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+          value: sap.kyma.custom.commerce.order.created.v1
       - eventSource:
           property: source
           type: exact
@@ -61,7 +61,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+          value: sap.kyma.custom.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
       - eventSource:
           property: source
           type: exact
@@ -69,7 +69,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+          value: sap.kyma.custom.appname.DocuSing_BO.Account_DocuSign.Updated.v1
   protocol: ""
   protocolsettings:
     exemptHandshake: true
@@ -92,7 +92,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+          value: sap.kyma.custom.commerce.order.created.v1
       - eventSource:
           property: source
           type: exact
@@ -100,7 +100,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+          value: sap.kyma.custom.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
       - eventSource:
           property: source
           type: exact
@@ -108,7 +108,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+          value: sap.kyma.custom.appname.DocuSing_BO.Account_DocuSign.Updated.v1
   protocol: ""
   protocolsettings:
     exemptHandshake: true
@@ -131,7 +131,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+          value: sap.kyma.custom.commerce.order.created.v1
       - eventSource:
           property: source
           type: exact
@@ -139,7 +139,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+          value: sap.kyma.custom.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
       - eventSource:
           property: source
           type: exact
@@ -147,7 +147,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+          value: sap.kyma.custom.appname.DocuSing_BO.Account_DocuSign.Updated.v1
   protocol: ""
   protocolsettings:
     exemptHandshake: true
@@ -170,7 +170,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+          value: sap.kyma.custom.commerce.order.created.v1
       - eventSource:
           property: source
           type: exact
@@ -178,7 +178,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+          value: sap.kyma.custom.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
       - eventSource:
           property: source
           type: exact
@@ -186,7 +186,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+          value: sap.kyma.custom.appname.DocuSing_BO.Account_DocuSign.Updated.v1
   protocol: ""
   protocolsettings:
     exemptHandshake: true
@@ -209,7 +209,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.commerce.order.created.v1
+          value: sap.kyma.custom.commerce.order.created.v1
       - eventSource:
           property: source
           type: exact
@@ -217,7 +217,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
+          value: sap.kyma.custom.no-app.New.Some-Other.Order-äöüÄÖÜβ.Final.C-r-e-a-t-e-d.v1
       - eventSource:
           property: source
           type: exact
@@ -225,7 +225,7 @@ spec:
         eventType:
           property: type
           type: exact
-          value: EVENT_TYPE_PREFIX.appname.DocuSing_BO.Account_DocuSign.Updated.v1
+          value: sap.kyma.custom.appname.DocuSing_BO.Account_DocuSign.Updated.v1
   protocol: ""
   protocolsettings:
     exemptHandshake: true

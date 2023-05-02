@@ -1,4 +1,4 @@
-apiVersion: serverless.kyma-project.io/v1alpha1
+apiVersion: serverless.kyma-project.io/v1alpha2
 kind: Function
 metadata:
   name: function-0
@@ -6,26 +6,33 @@ metadata:
   labels:
     app.kubernetes.io/name: function-0
 spec:
-  runtime: nodejs14
-  type: ''
-  minReplicas: 1
-  maxReplicas: 5
-  source: |-
-    module.exports = { 
-      main: function (event, context) {
-        let data = JSON.stringify(event.data);
-        console.log(data);
-        return data
-      }
-    }
-  deps: |-
-    { 
-      "name": "function-0",
-      "version": "1.0.0",
-      "dependencies": {}
-    }
+  replicas: 1
+  resourceConfiguration:
+    function:
+      profile: XS
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+  runtime: nodejs16
+  scaleConfig:
+    maxReplicas: 5
+    minReplicas: 1
+  source:
+    inline:
+      source: |-
+        module.exports = {
+          main: function (event, context) {
+            let data = JSON.stringify(event.data);
+            console.log(data);
+            return data
+          }
+        }
 ---
-apiVersion: serverless.kyma-project.io/v1alpha1
+apiVersion: serverless.kyma-project.io/v1alpha2
 kind: Function
 metadata:
   name: function-1
@@ -33,26 +40,33 @@ metadata:
   labels:
     app.kubernetes.io/name: function-1
 spec:
-  runtime: nodejs14
-  type: ''
-  minReplicas: 1
-  maxReplicas: 5
-  source: |-
-    module.exports = { 
-      main: function (event, context) {
-        let data = JSON.stringify(event.data);
-        console.log(data);
-        return data
-      }
-    }
-  deps: |-
-    { 
-      "name": "function-1",
-      "version": "1.0.0",
-      "dependencies": {}
-    }
+  replicas: 1
+  resourceConfiguration:
+    function:
+      profile: XS
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+  runtime: nodejs16
+  scaleConfig:
+    maxReplicas: 5
+    minReplicas: 1
+  source:
+    inline:
+      source: |-
+        module.exports = {
+          main: function (event, context) {
+            let data = JSON.stringify(event.data);
+            console.log(data);
+            return data
+          }
+        }
 ---
-apiVersion: serverless.kyma-project.io/v1alpha1
+apiVersion: serverless.kyma-project.io/v1alpha2
 kind: Function
 metadata:
   name: function-2
@@ -60,22 +74,29 @@ metadata:
   labels:
     app.kubernetes.io/name: function-2
 spec:
-  runtime: nodejs14
-  type: ''
-  minReplicas: 1
-  maxReplicas: 5
-  source: |-
-    module.exports = { 
-      main: function (event, context) {
-        let data = JSON.stringify(event.data);
-        console.log(data);
-        return data
-      }
-    }
-  deps: |-
-    { 
-      "name": "function-2",
-      "version": "1.0.0",
-      "dependencies": {}
-    }
+  replicas: 1
+  resourceConfiguration:
+    function:
+      profile: XS
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+  runtime: nodejs16
+  scaleConfig:
+    maxReplicas: 5
+    minReplicas: 1
+  source:
+    inline:
+      source: |-
+        module.exports = {
+          main: function (event, context) {
+            let data = JSON.stringify(event.data);
+            console.log(data);
+            return data
+          }
+        }
 ---
