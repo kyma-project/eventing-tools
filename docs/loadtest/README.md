@@ -2,7 +2,7 @@
 
 This version of the load tester can test subscription `v1alpha2` only. For `v1alpha1` we have a [legacy branch](https://github.com/kyma-project/eventing-tools/tree/loadtest-subscription-v1alpha1).
 This tool is used to generate continues load on the Eventing components.
-It does that by sending Cloudevents to the Eventing publisher proxy forever and consume them inside Kyma functions.
+It does that by sending CloudEvents to the Eventing publisher proxy forever and consuming them inside Kyma functions.
 Ideally, it should be used when JetStream is used as the active Eventing backend.
 
 ## Subscriptions
@@ -17,11 +17,11 @@ After you configured the event type in the label, the load tester creates events
 The load generated per event type is extracted from the event type. To do this, the event type must match the following pattern:
 `<event-name>.v<Number of events per second>`. For example, `order.created.v500` creates events of type order.create.v500 and the sender tries to publish 500 events per second.
 
-> Note: Encoding the EPS in the event type version is used only for debugging purposes and is not a production use-case.
+> Note: Encoding the EPS in the event type version is used only for debugging purposes and is not a production use case.
 
 > There is no special handling of subscriptions otherwise. The `sink` and also the `maxInFlight` settings will be respected.
 
-This publisher works best in combination with the loadtest-subscriber. Two instances of the subscriber are deployed using the kustomize deployment. Configure the subscriptions to use those by setting the sink to `loadtest-subscriber-0.eventing-test.svc.cluster.local` or `loadtest-subscriber-1.eventing-test.svc.cluster.local`
+This publisher works best in combination with the loadtest-subscriber. Two instances of the subscriber are deployed using the kustomize deployment. To configure the subscriptions to use those two instances, set the sink to `loadtest-subscriber-0.eventing-test.svc.cluster.local` or `loadtest-subscriber-1.eventing-test.svc.cluster.local`
 
 ## Configurations
 
@@ -100,5 +100,4 @@ infrastructure inside the `eventing-test` namespace.
 
 ## Future enhancements
 
-- Implement a graceful shutdown to delete Kyma subscriptions in the `eventing-test` namespace when the loadtest receives a
-  termination signal. 
+- Implement a graceful shutdown to delete Kyma subscriptions in the `eventing-test` Namespace when the loadtest receives a termination signal.
