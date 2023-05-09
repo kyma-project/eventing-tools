@@ -88,6 +88,7 @@ spec:
         - image: eu.gcr.io/kyma-project/eventing-tools:v20230329-fc309b92
           args:
             - subscriber
+            - --listen-port=8888
           imagePullPolicy: IfNotPresent
           name: event-subscriber
           ports:
@@ -132,6 +133,9 @@ spec:
     spec:
       containers:
         - image: eu.gcr.io/kyma-project/eventing-tools:v20230329-fc309b92
+          args:
+            - subscriber
+            - --listen-port=8888
           imagePullPolicy: IfNotPresent
           name: event-subscriber
           ports:
@@ -176,6 +180,9 @@ spec:
     spec:
       containers:
         - image: eu.gcr.io/kyma-project/eventing-tools:v20230329-fc309b92
+          args:
+            - subscriber
+            - --listen-port=8888
           imagePullPolicy: IfNotPresent
           name: event-subscriber
           ports:
