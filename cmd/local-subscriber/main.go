@@ -8,7 +8,7 @@ import (
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = fmt.Fprintf(w, "Hi there!")
+		w.WriteHeader(http.StatusOK)
 	})
 
 	fmt.Printf("Starting server at port 8080\n")

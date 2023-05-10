@@ -23,7 +23,7 @@ func (s *Client) Get(ctx context.Context, namespace, name string) (*Subscription
 	if err != nil {
 		return nil, err
 	}
-	return toSubscription(object)
+	return ToSubscription(object)
 }
 
 func (s *Client) Create(ctx context.Context, subscription *Subscription) (*Subscription, error) {
@@ -35,7 +35,7 @@ func (s *Client) Create(ctx context.Context, subscription *Subscription) (*Subsc
 	if err != nil {
 		return nil, err
 	}
-	return toSubscription(object)
+	return ToSubscription(object)
 }
 
 func (s *Client) Update(ctx context.Context, subscription *Subscription) (*Subscription, error) {
@@ -47,7 +47,7 @@ func (s *Client) Update(ctx context.Context, subscription *Subscription) (*Subsc
 	if err != nil {
 		return nil, err
 	}
-	return toSubscription(object)
+	return ToSubscription(object)
 }
 
 func (s *Client) Delete(ctx context.Context, namespace, name string) error {
@@ -62,7 +62,7 @@ func toUnstructured(subscription *Subscription) (*unstructured.Unstructured, err
 	return &unstructured.Unstructured{Object: object}, nil
 }
 
-func toSubscription(object *unstructured.Unstructured) (*Subscription, error) {
+func ToSubscription(object *unstructured.Unstructured) (*Subscription, error) {
 	subscription := &Subscription{}
 	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, subscription); err != nil {
 		return nil, err

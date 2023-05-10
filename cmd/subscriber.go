@@ -7,7 +7,7 @@ import (
 	validationtestsubscriber "github.com/kyma-project/eventing-tools/internal/validationtest/subscriber"
 )
 
-var port int
+var subscriberPort int
 
 // subscriberCmd represents the subscriber command
 var subscriberCmd = &cobra.Command{
@@ -16,9 +16,9 @@ var subscriberCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		switch loadtest {
 		case true:
-			loadtestsubscriber.Start(port)
+			loadtestsubscriber.Start(subscriberPort)
 		case false:
-			validationtestsubscriber.Start(port)
+			validationtestsubscriber.Start(subscriberPort)
 		}
 	},
 }
@@ -35,6 +35,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// subscriberCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	subscriberCmd.Flags().IntVarP(&port, "listen-port", "p", 8080, "listen on port for incoming events")
+	subscriberCmd.Flags().IntVarP(&subscriberPort, "listen-port", "p", 8080, "listen on port for incoming events")
 
 }

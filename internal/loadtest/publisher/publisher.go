@@ -1,40 +1,59 @@
 package publisher
 
 import (
+	"fmt"
 	"net/http"
+
+	"k8s.io/client-go/dynamic"
 
 	"github.com/kyma-project/eventing-tools/internal/k8s"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
-	"github.com/kyma-project/eventing-tools/internal/loadtest/infra"
+	sender2 "github.com/kyma-project/eventing-tools/internal/loadtest/sender"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/sender/cloudevent"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/sender/legacyevent"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/subscription"
 	"github.com/kyma-project/eventing-tools/internal/logger"
 	"github.com/kyma-project/eventing-tools/internal/probes"
 )
 
-func Start() {
+const (
+	Namespace = "eventing-test"
+
+	ConfigMapName = "loadtest-publisher"
+)
+
+func Start(port int) {
 	appConfig := config.New()
 	k8sConfig := k8s.ConfigOrDie()
 	k8sClient := k8s.ClientOrDie(k8sConfig)
+	dynamicClient := dynamic.NewForConfigOrDie(k8sConfig)
 
-	legacyEventSender := legacyevent.NewSender(appConfig)
-	cloudEventSender := cloudevent.NewSender(appConfig)
-	infraInstance := infra.New(appConfig, k8sConfig)
+	legacySender := legacyevent.NewSender(appConfig)
+	legacyEventSender := sender2.NewSender(appConfig, legacySender)
 
-	config.NewWatcher(k8sClient, infra.Namespace, infra.ConfigMapName).
-		OnAddNotify(infraInstance).
-		OnUpdateNotify(infraInstance).
-		OnDeleteNotify(infraInstance).
+	ceSender := cloudevent.NewSender(appConfig)
+	ceEventSender := sender2.NewSender(appConfig, ceSender)
+
+	config.NewWatcher(k8sClient, Namespace, ConfigMapName).
 		OnAddNotify(legacyEventSender).
 		OnUpdateNotify(legacyEventSender).
 		OnDeleteNotify(legacyEventSender).
-		OnAddNotify(cloudEventSender).
-		OnUpdateNotify(cloudEventSender).
-		OnDeleteNotify(cloudEventSender).
+		OnAddNotify(ceEventSender).
+		OnUpdateNotify(ceEventSender).
+		OnDeleteNotify(ceEventSender).
 		OnDeleteNotifyMe().
+		Watch()
+
+	subscription.NewWatcher(dynamicClient).
+		OnAddNotify(ceEventSender).
+		OnUpdateNotify(ceEventSender).
+		OnDeleteNotify(ceEventSender).
+		OnAddNotify(legacyEventSender).
+		OnUpdateNotify(legacyEventSender).
+		OnDeleteNotify(legacyEventSender).
 		Watch()
 
 	http.HandleFunc(probes.EndpointReadyz, probes.DefaultHandler)
 	http.HandleFunc(probes.EndpointHealthz, probes.DefaultHandler)
-	logger.LogIfError(http.ListenAndServe(appConfig.ServerAddress, nil))
+	logger.LogIfError(http.ListenAndServe(fmt.Sprintf(":%v", port), nil))
 }
