@@ -11,7 +11,6 @@ import (
 	"github.com/kyma-project/eventing-tools/internal/client/cloudevents"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/events"
-	"github.com/kyma-project/eventing-tools/internal/loadtest/events/GenericEvent"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/sender"
 )
 
@@ -38,8 +37,7 @@ func NewSender(conf *config.Config) *Sender {
 	return s
 }
 
-func (s *Sender) SendEvent(evt *GenericEvent.Event, ack chan<- int, nack chan<- int, undelivered chan<- int) {
-
+func (s *Sender) SendEvent(evt *events.Generator, ack chan<- int, nack chan<- int, undelivered chan<- int) {
 	seq := <-evt.Counter()
 
 	ce, err := evt.ToCloudEvent(seq)
