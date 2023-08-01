@@ -38,7 +38,7 @@ func TestFactory_reconcile(t *testing.T) {
 					Spec: v1alpha2.SubscriptionSpec{
 						Sink:         "",
 						TypeMatching: v1alpha2.Standard,
-						Source:       "source",
+						Source:       "Source",
 						Types:        []string{"foo.bar.v1", "bar.foo.v1"},
 						Config:       nil,
 					},

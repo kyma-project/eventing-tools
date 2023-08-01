@@ -3,33 +3,17 @@ package config
 import (
 	"flag"
 	"fmt"
-	"strings"
 	"time"
 )
 
 // Config represents environment config.
 type Config struct {
-	ServerAddress        string
-	PublishEndpoint      string        `config:"publish_endpoint"`
-	UseLegacyEvents      bool          `config:"use_legacy_events"`
-	EventSource          string        `config:"event_source"`
-	MaxInflightMessages0 string        `config:"max_inflight_messages_0"`
-	MaxInflightMessages1 string        `config:"max_inflight_messages_1"`
-	EventName0           string        `config:"event_name_0"`
-	EventName1           string        `config:"event_name_1"`
-	VersionFormat        string        `config:"version_format"`
-	GenerateCount0       int           `config:"generate_count_0"`
-	GenerateCount1       int           `config:"generate_count_1"`
-	EpsStart0            int           `config:"eps_start_0"`
-	EpsStart1            int           `config:"eps_start_1"`
-	EpsIncrement0        int           `config:"eps_increment_0"`
-	EpsIncrement1        int           `config:"eps_increment_1"`
-	EpsLimit             int           `config:"eps_limit"`
-	Workers              int           `config:"workers"`
-	MaxIdleConns         int           `config:"max_idle_conns"`
-	MaxConnsPerHost      int           `config:"max_conns_per_host"`
-	MaxIdleConnsPerHost  int           `config:"max_idle_conns_per_host"`
-	IdleConnTimeout      time.Duration `config:"idle_conn_timeout"`
+	ServerAddress       string
+	PublishHost         string        `config:"publish_host"`
+	MaxIdleConns        int           `config:"max_idle_conns"`
+	MaxConnsPerHost     int           `config:"max_conns_per_host"`
+	MaxIdleConnsPerHost int           `config:"max_idle_conns_per_host"`
+	IdleConnTimeout     time.Duration `config:"idle_conn_timeout"`
 }
 
 func New() *Config {
@@ -39,39 +23,9 @@ func New() *Config {
 	return c
 }
 
-// IsVersionFormatEmpty returns true if event version is empty.
-func (c *Config) IsVersionFormatEmpty() bool {
-	return len(strings.TrimSpace(c.VersionFormat)) == 0
-}
-
-// IsEventName0Empty returns true if event name 0 is empty.
-func (c *Config) IsEventName0Empty() bool {
-	return len(strings.TrimSpace(c.EventName0)) == 0
-}
-
-// IsEventName1Empty returns true if event name 1 is empty.
-func (c *Config) IsEventName1Empty() bool {
-	return len(strings.TrimSpace(c.EventName1)) == 0
-}
-
-// ComputeEventsCount returns the count of events to generate.
-func (c *Config) ComputeEventsCount() int {
-	count := 0
-	if c.IsVersionFormatEmpty() {
-		return count
-	}
-	if !c.IsEventName0Empty() {
-		count += c.GenerateCount0
-	}
-	if !c.IsEventName1Empty() {
-		count += c.GenerateCount1
-	}
-	return count
-}
-
 func (c *Config) String() string {
 	return fmt.Sprintf(
-		"ServerAddress: %v PublishEndpoint: %v MaxInflightMessages0: %v MaxInflightMessages1: %v EventFormat0: %v EventFormat1: %v GenerateCount0: %v GenerateCount1: %v EpsStart0: %v EpsStart1: %v EpsIncrement0: %v EpsIncrement1: %v EpsLimit: %v Workers: %v MaxIdleConns: %v MaxConnsPerHost : %v MaxIdleConnsPerHost: %v IdleConnTimeout: %v",
-		c.ServerAddress, c.PublishEndpoint, c.MaxInflightMessages0, c.MaxInflightMessages1, c.EventName0, c.EventName1, c.GenerateCount0, c.GenerateCount1, c.EpsStart0, c.EpsStart1, c.EpsIncrement0, c.EpsIncrement1, c.EpsLimit, c.Workers, c.MaxIdleConns, c.MaxConnsPerHost, c.MaxIdleConnsPerHost, c.IdleConnTimeout,
+		"ServerAddress: %v PublishHost: %v MaxIdleConns: %v MaxConnsPerHost : %v MaxIdleConnsPerHost: %v IdleConnTimeout: %v",
+		c.ServerAddress, c.PublishHost, c.MaxIdleConns, c.MaxConnsPerHost, c.MaxIdleConnsPerHost, c.IdleConnTimeout,
 	)
 }

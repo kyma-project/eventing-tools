@@ -10,30 +10,25 @@ import (
 )
 
 type Generator struct {
-	source      string
-	version     string
-	name        string
-	eps         int
-	starttime   string
-	cancel      context.CancelFunc
-	eventtype   string
-	running     bool
-	counter     int
-	counterLock sync.Mutex
-	id          int
-	sink        string
-	c           chan<- Event
-	wg          sync.WaitGroup
-	format      EventFormat
+	source    string
+	eps       int
+	starttime string
+	cancel    context.CancelFunc
+	eventtype string
+	id        int
+	sink      string
+	c         chan<- Event
+	wg        sync.WaitGroup
+	format    EventFormat
 }
 
 type Event struct {
-	eventtype string
-	source    string
-	sink      string
-	id        int
-	startTime string
-	format    EventFormat
+	EventType string
+	Source    string
+	Sink      string
+	ID        int
+	StartTime string
+	Format    EventFormat
 }
 
 func NewGenerator(eventType, source string, eps int, format string, senderC chan<- Event) *Generator {
@@ -57,6 +52,7 @@ func updateGeneratorFormat(sub *v1alpha2.Subscription, gen *Generator) {
 	f := EventFormatFromString(sub.GetLabels()[formatLabel])
 	if gen.format != f {
 		gen.format = f
+		gen.id = 0
 		gen.starttime = time.Now().Format("2006-01-02T15:04:05")
 	}
 }
@@ -65,7 +61,6 @@ func (e *Generator) fillChan(ctx context.Context, c chan<- Event) {
 	t := time.NewTicker(time.Second)
 	defer t.Stop()
 	remaining := e.eps
-	sent := 0
 	id := 0
 	for {
 		select {
@@ -74,25 +69,18 @@ func (e *Generator) fillChan(ctx context.Context, c chan<- Event) {
 			return
 		case <-t.C:
 			remaining = e.eps
-			//stats <- EventStats{
-			//	eventtype: e.eventtype,
-			//	source:    e.source,
-			//	startTime: e.starttime,
-			//	sent:      sent,
-			//}
-			sent = 0
 		default:
 			if remaining > 0 {
 				c <- Event{
-					eventtype: e.eventtype,
-					source:    e.source,
-					sink:      e.sink,
-					id:        id,
-					startTime: e.starttime,
-					format:    e.format,
+					EventType: e.eventtype,
+					Source:    e.source,
+					Sink:      e.sink,
+					ID:        id,
+					StartTime: e.starttime,
+					Format:    e.format,
 				}
-				sent++
 				remaining--
+				id++
 			}
 		}
 	}
@@ -113,32 +101,6 @@ func (e *Generator) Stop() {
 	e.wg.Wait()
 }
 
-// func (e *Generator) ToLegacyEvent(seq int) payload.LegacyEvent {
-// 	d := payload.DTO{
-// 		Start: e.starttime,
-// 		Value: seq,
-// 	}
-// 	return payload.LegacyEvent{
-// 		Data:             d,
-// 		EventType:        e.name,
-// 		EventTypeVersion: e.version,
-// 		EventTime:        time.Now().Format("2006-01-02T15:04:05.000Z"),
-// 		EventTracing:     true,
-// 	}
-// }
-//
-// func (e *Generator) ToCloudEvent(seq int) (cev2.Event, error) {
-// 	ce := cev2.NewEvent()
-// 	ce.SetType(e.eventtype)
-// 	ce.SetSource(e.source)
-// 	d := payload.DTO{
-// 		Start: e.starttime,
-// 		Value: seq,
-// 	}
-// 	err := ce.SetData(cev2.ApplicationJSON, d)
-// 	return ce, err
-// }
-
 func EventFormatFromString(format string) EventFormat {
 	if format == "legacy" {
 		return Legacy
@@ -147,6 +109,13 @@ func EventFormatFromString(format string) EventFormat {
 }
 
 type EventFormat int
+
+func (e EventFormat) String() string {
+	if e == Legacy {
+		return "legacy"
+	}
+	return "cloudevent"
+}
 
 const (
 	Legacy EventFormat = iota

@@ -1,7 +1,6 @@
 package events
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 
@@ -82,10 +81,11 @@ func (f *Factory) reconcile(sub *v1alpha2.Subscription) error {
 	eg := f.generators[nn]
 
 	// check if eventtypes have been removed
+currentGenerator:
 	for etgen, gen := range eg {
 		for _, et := range EventTypeFromSubscription(sub) {
 			if et == etgen {
-				break
+				continue currentGenerator
 			}
 		}
 		// remove generators for removed eventType
@@ -94,13 +94,14 @@ func (f *Factory) reconcile(sub *v1alpha2.Subscription) error {
 	}
 
 	// handle adding EventTypes
+currentEventType:
 	for _, et := range EventTypeFromSubscription(sub) {
 		//for etgen, gen := range eg {
 		for etgen, gen := range eg {
 			if et == etgen {
 				// update the eventFormat to the one specified in the subscription
 				updateGeneratorFormat(sub, gen)
-				break
+				continue currentEventType
 			}
 		}
 		// create a new EventGenerator for the found eventType and start it
@@ -144,7 +145,7 @@ func (f *Factory) stopGenerators(generators eventGenerator) {
 func EventTypeFromSubscription(sub *v1alpha2.Subscription) []string {
 	var ets []string
 	for _, t := range sub.Spec.Types {
-		ets = append(ets, fmt.Sprintf("%v.%v", sub.Spec.Source, t))
+		ets = append(ets, t)
 	}
 	return ets
 }

@@ -1,8 +1,6 @@
-package sender
+package _interface
 
 import (
-	"net/http"
-
 	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/events"
 )
@@ -14,7 +12,6 @@ type ConfigHandler interface {
 }
 
 type Sender interface {
-	SendEvent(e *events.Generator, ack chan<- int, nack chan<- int, undelivered chan<- int)
-	Format() string
-	Init(t *http.Transport, cfg *config.Config)
+	SendEvent(event events.Event)
+	Format() events.EventFormat
 }
