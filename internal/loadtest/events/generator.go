@@ -20,6 +20,7 @@ type Generator struct {
 	c         chan<- Event
 	wg        sync.WaitGroup
 	format    EventFormat
+	lock      sync.Mutex
 }
 
 type Event struct {
@@ -51,9 +52,7 @@ type EventStats struct {
 func updateGeneratorFormat(sub *v1alpha2.Subscription, gen *Generator) {
 	f := EventFormatFromString(sub.GetLabels()[formatLabel])
 	if gen.format != f {
-		gen.format = f
-		gen.id = 0
-		gen.starttime = time.Now().Format("2006-01-02T15:04:05")
+		gen.Update(f)
 	}
 }
 
@@ -61,7 +60,6 @@ func (e *Generator) fillChan(ctx context.Context, c chan<- Event) {
 	t := time.NewTicker(time.Second)
 	defer t.Stop()
 	remaining := e.eps
-	id := 0
 	for {
 		select {
 		case <-ctx.Done():
@@ -71,6 +69,12 @@ func (e *Generator) fillChan(ctx context.Context, c chan<- Event) {
 			remaining = e.eps
 		default:
 			if remaining > 0 {
+				// ensure nowone resets the id atm
+				e.lock.Lock()
+				id := e.id
+				e.id++
+				e.lock.Unlock()
+
 				c <- Event{
 					EventType: e.eventtype,
 					Source:    e.source,
@@ -80,10 +84,18 @@ func (e *Generator) fillChan(ctx context.Context, c chan<- Event) {
 					Format:    e.format,
 				}
 				remaining--
-				id++
 			}
 		}
 	}
+}
+
+func (e *Generator) Update(format EventFormat) {
+	// let's stop all concurrency for a while
+	e.lock.Lock()
+	e.format = format
+	e.id = 0
+	e.starttime = time.Now().Format("2006-01-02T15:04:05")
+	e.lock.Unlock()
 }
 
 func (e *Generator) Start() {
