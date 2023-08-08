@@ -44,11 +44,6 @@ func NewGenerator(eventType, source string, eps int, format string, senderC chan
 	return &e
 }
 
-type EventStats struct {
-	eventtype, source, startTime string
-	sent                         int
-}
-
 func updateGeneratorFormat(sub *v1alpha2.Subscription, gen *Generator) {
 	f := EventFormatFromString(sub.GetLabels()[formatLabel])
 	if gen.format != f {
@@ -101,8 +96,8 @@ func (e *Generator) Update(format EventFormat) {
 func (e *Generator) Start() {
 	ctx, cancel := context.WithCancel(context.Background())
 	e.cancel = cancel
+	e.wg.Add(1)
 	go func() {
-		e.wg.Add(1)
 		defer e.wg.Done()
 		e.fillChan(ctx, e.c)
 	}()

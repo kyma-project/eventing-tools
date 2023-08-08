@@ -28,7 +28,6 @@ type EventSender struct {
 	cancel                    context.CancelFunc
 	ackC, nackC, undeliveredC chan events.Event
 	wg                        sync.WaitGroup
-	acks, nacks, undelivereds chan int
 	events                    chan events.Event
 	senders                   []_interface.Sender
 	limitC                    chan any
@@ -74,13 +73,13 @@ func NewSender() (*EventSender, chan<- events.Event) {
 func (s *EventSender) Start() {
 	s.ctx, s.cancel = context.WithCancel(context.Background())
 	s.limitC = make(chan any, 3000)
+	s.wg.Add(1)
 	go func() {
-		s.wg.Add(1)
 		defer s.wg.Done()
 		s.doAccounting()
 	}()
+	s.wg.Add(1)
 	go func() {
-		s.wg.Add(1)
 		defer s.wg.Done()
 		s.sendEvents()
 	}()

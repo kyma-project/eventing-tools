@@ -18,15 +18,15 @@ type Factory struct {
 }
 
 func (f *Factory) OnNewSubscription(subscription *unstructured.Unstructured) {
-	f.FromSubscription(subscription)
+	f.StartReconcile(subscription)
 }
 
 func (f *Factory) OnChangedSubscription(subscription *unstructured.Unstructured) {
-	f.FromSubscription(subscription)
+	f.StartReconcile(subscription)
 }
 
 func (f *Factory) OnDeleteSubscription(subscription *unstructured.Unstructured) {
-	f.FromSubscription(subscription)
+	f.StartReconcile(subscription)
 }
 
 func NewGeneratorFactory(senderC chan<- Event) *Factory {
@@ -46,12 +46,14 @@ const (
 
 var _ subscription.Notifiable = &Factory{}
 
-func (f *Factory) FromSubscription(subscription *unstructured.Unstructured) error {
+func (f *Factory) StartReconcile(subscription *unstructured.Unstructured) {
 	sub, err := v1alpha2.ToSubscription(subscription)
 	if err != nil {
-		return err
+		// // TODO[k15r]:  log
+		return
 	}
-	return f.reconcile(sub)
+	//nolint:errcheck // TODO[k15r]: get rid of these errors
+	f.reconcile(sub)
 }
 
 func (f *Factory) reconcile(sub *v1alpha2.Subscription) error {
@@ -83,7 +85,7 @@ func (f *Factory) reconcile(sub *v1alpha2.Subscription) error {
 	// check if eventtypes have been removed
 currentGenerator:
 	for etgen, gen := range eg {
-		for _, et := range EventTypeFromSubscription(sub) {
+		for _, et := range sub.Spec.Types {
 			if et == etgen {
 				continue currentGenerator
 			}
@@ -95,7 +97,7 @@ currentGenerator:
 
 	// handle adding EventTypes
 currentEventType:
-	for _, et := range EventTypeFromSubscription(sub) {
+	for _, et := range sub.Spec.Types {
 		//for etgen, gen := range eg {
 		for etgen, gen := range eg {
 			if et == etgen {
@@ -140,12 +142,4 @@ func (f *Factory) stopGenerators(generators eventGenerator) {
 	for _, g := range generators {
 		g.Stop()
 	}
-}
-
-func EventTypeFromSubscription(sub *v1alpha2.Subscription) []string {
-	var ets []string
-	for _, t := range sub.Spec.Types {
-		ets = append(ets, t)
-	}
-	return ets
 }
