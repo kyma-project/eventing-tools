@@ -4,7 +4,7 @@ metadata:
   name: loadtest-publisher
   namespace: eventing-test
 data:
-  publish_endpoint: "http://eventing-publisher-proxy.kyma-system"
+  publish_host: "http://eventing-publisher-proxy.kyma-system"
   use_legacy_events:  "false"
   event_source: "noapp"
   version_format: "v%04d"

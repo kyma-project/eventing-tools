@@ -11,6 +11,8 @@ items:
       namespace: eventing-test
     spec:
       sink: http://loadtest-subscriber-0.eventing-test.svc.cluster.local
+      config:
+        maxInFlightMessages: "200"
       source: "cloudevent"
       typeMatching: standard
       types:
@@ -20,6 +22,7 @@ items:
         - CE.v64
         - CE.v128
         - CE.v256
+        - CE.v512
   - apiVersion: eventing.kyma-project.io/v1alpha2
     kind: Subscription
     metadata:
@@ -30,6 +33,8 @@ items:
       namespace: eventing-test
     spec:
       sink: http://loadtest-subscriber-1.eventing-test.svc.cluster.local
+      config:
+        maxInFlightMessages: "200"
       source: "legacy"
       typeMatching: standard
       types:
@@ -39,3 +44,4 @@ items:
         - LEGACY.v64
         - LEGACY.v128
         - LEGACY.v256
+        - LEGACY.v512
