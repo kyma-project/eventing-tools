@@ -11,5 +11,5 @@ jobs:
         with:
           repository_url: "${{ github.server_url }}/${{ github.repository }}"
           access_token: "${{ secrets.GITHUB_TOKEN }}"
-          copyright_owner: "Korbinian Stoemmer"
-          upstream_contact: "Korbinian Stoemmer <korbinian.stoemmer@sap.com>"
+          copyright_owner: "SAP SE or an SAP affiliate company"
+          upstream_contact: "SAP Open Source Program Office <ospo@sap.com>"
