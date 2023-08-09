@@ -18,7 +18,7 @@ spec:
         app: publisher
     spec:
       containers:
-        - image: eu.gcr.io/kyma-project/eventing-tools:v20230329-fc309b92
+        - image: ghcr.io/kyma-project/eventing-tools:0.0.1
           args:
             - publisher
           imagePullPolicy: IfNotPresent
@@ -85,7 +85,7 @@ spec:
         app: event-subscriber-0
     spec:
       containers:
-        - image: eu.gcr.io/kyma-project/eventing-tools:v20230329-fc309b92
+        - image: ghcr.io/kyma-project/eventing-tools:0.0.1 
           args:
             - subscriber
             - --listen-port=8888
@@ -132,7 +132,7 @@ spec:
         app: event-subscriber-1
     spec:
       containers:
-        - image: eu.gcr.io/kyma-project/eventing-tools:v20230329-fc309b92
+        - image: ghcr.io/kyma-project/eventing-tools:0.0.1 
           args:
             - subscriber
             - --listen-port=8888
@@ -179,7 +179,7 @@ spec:
         app: event-subscriber-2
     spec:
       containers:
-        - image: eu.gcr.io/kyma-project/eventing-tools:v20230329-fc309b92
+        - image: ghcr.io/kyma-project/eventing-tools:0.0.1 
           args:
             - subscriber
             - --listen-port=8888
