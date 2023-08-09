@@ -6,10 +6,12 @@ jobs:
   create_metadata_proposal:
     runs-on: ubuntu-latest
     name: "Metadata Creation Tool"
+    permissions:
+      - 
     steps:
       - uses: SAP/metadata-creation-tool-for-reuse@main
         with:
           repository_url: "${{ github.server_url }}/${{ github.repository }}"
-          access_token: "${{ secrets.GITHUB_TOKEN }}"
+          access_token: "${{ secrets.REUSE_SECRET }}"
           copyright_owner: "SAP SE or an SAP affiliate company"
           upstream_contact: "SAP Open Source Program Office <ospo@sap.com>"
