@@ -28,7 +28,7 @@ spec:
             - kyma-system
             topologyKey: kubernetes.io/hostname
       containers:
-        - image: ghcr.io/kyma-project/eventing-tools:0.0.1 
+        - image: ghcr.io/kyma-project/eventing-tools:0.0.2 
           args:
             - subscriber
             - --loadtest
@@ -87,7 +87,7 @@ spec:
             - kyma-system
             topologyKey: kubernetes.io/hostname
       containers:
-        - image: ghcr.io/kyma-project/eventing-tools:0.0.1
+        - image: ghcr.io/kyma-project/eventing-tools:0.0.2
           args:
             - subscriber
             - --loadtest
