@@ -15,7 +15,17 @@ This repository contains useful tools for Kyma Eventing:
 - [stern](https://github.com/stern/stern).
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl).
 
-## Future enhancements
+## Contributing
+<!--- mandatory section - do not change this! --->
 
-- Instead of duplicating and hard-coding the common Eventing infrastructure (e.g. Kyma subscriptions, subscribers, ...etc) between the `publisher` and the `subscriber`, have a central place for common configurations where both applications can use at runtime.
-- Use a structured logger for all applications.
+See [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## Code of Conduct
+<!--- mandatory section - do not change this! --->
+
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+
+## Licensing
+<!--- mandatory section - do not change this! --->
+
+See the [LICENSE file](./LICENSE)
