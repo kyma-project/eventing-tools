@@ -19,12 +19,13 @@ func TestFactory_reconcile(t *testing.T) {
 		sub *v1alpha2.Subscription
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+		name            string
+		fields          fields
+		args            args
+		wantErr         bool
+		checkEventsFunc func([]Event) bool
 	}{
-		{name: "new subscription",
+		{name: "new subscription - starts sending events",
 			fields: fields{
 				generators: map[NamespaceName]eventGenerator{},
 				senderC:    make(chan Event),
@@ -45,18 +46,22 @@ func TestFactory_reconcile(t *testing.T) {
 				},
 			},
 			wantErr: false,
+			checkEventsFunc: func(events []Event) bool {
+				return len(events) > 0
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
+			var receivedEvents []Event
 			go func(ctx context.Context) {
 				for {
 					select {
 					case <-ctx.Done():
 						return
 					case e := <-tt.fields.senderC:
-						t.Logf("%+v", e)
+						receivedEvents = append(receivedEvents, e)
 					}
 				}
 			}(ctx)
@@ -70,6 +75,9 @@ func TestFactory_reconcile(t *testing.T) {
 			time.Sleep(1 * time.Second)
 			f.Stop()
 			cancel()
+			if !tt.checkEventsFunc(receivedEvents) {
+				t.Fail()
+			}
 		})
 	}
 }
