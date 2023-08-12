@@ -7,51 +7,73 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
+	"time"
 
+	"github.com/kyma-project/eventing-tools/internal/client/transport"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/events"
-	"github.com/kyma-project/eventing-tools/internal/loadtest/events/GenericEvent"
-	"github.com/kyma-project/eventing-tools/internal/loadtest/sender"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/events/payload"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/sender/interface"
 )
 
-var _ sender.Sender = &Sender{}
+var _ _interface.Sender = &Sender{}
 
 // Sender sends legacy events.
 type Sender struct {
-	client *http.Client
-	config *config.Config
+	ackC, nackC, undeliveredC chan<- events.Event
+	client                    *http.Client
+	config                    config.Config
 }
 
-func (s *Sender) Init(t *http.Transport, cfg *config.Config) {
-	s.config = cfg
-	s.client = &http.Client{
-		Transport: t,
+func (s *Sender) Format() events.EventFormat {
+	return events.Legacy
+}
+
+func NewSender(cfg config.Config, ackC, nackC, undeliveredC chan<- events.Event) *Sender {
+	s := &Sender{
+		config: cfg,
+		client: &http.Client{
+			Transport: transport.New(cfg.MaxIdleConns, cfg.MaxConnsPerHost, cfg.MaxIdleConnsPerHost, cfg.IdleConnTimeout),
+		},
+		ackC:         ackC,
+		nackC:        nackC,
+		undeliveredC: undeliveredC,
 	}
-}
-
-func (s *Sender) Format() string {
-	return events.LegacyFormat
-}
-
-func NewSender(conf *config.Config) *Sender {
-	s := &Sender{config: conf}
 
 	return s
 }
 
-func (s *Sender) SendEvent(evt *GenericEvent.Event, ack, nack, undelivered chan<- int) {
+func ToLegacyEvent(event events.Event) payload.LegacyEvent {
+	d := payload.DTO{
+		Start: event.StartTime,
+		Value: event.ID,
+	}
+	eventtype, version := splitEventType(event.EventType)
+	return payload.LegacyEvent{
+		Data:             d,
+		EventType:        eventtype,
+		EventTypeVersion: version,
+		EventTime:        time.Now().Format("2006-01-02T15:04:05.000Z"),
+		EventTracing:     true,
+	}
+}
 
-	seq := <-evt.Counter()
+func splitEventType(eventType string) (string, string) {
+	i := strings.LastIndex(eventType, ".")
+	return eventType[0:i], eventType[i+1:]
+}
 
+func (s *Sender) SendEvent(event events.Event) {
 	// Build a http request out of the legacy event.
-	le := evt.ToLegacyEvent(seq)
+	le := ToLegacyEvent(event)
 	b, err := json.Marshal(le)
 	if err != nil {
 		return
 	}
 
 	r := bytes.NewReader(b)
-	legacyEndpoint := fmt.Sprintf("%s/%s/v1/events", s.config.PublishEndpoint, evt.Source())
+	legacyEndpoint := fmt.Sprintf("%s/%s/v1/events", s.config.PublishHost, event.Source)
 	rq, err := http.NewRequestWithContext(context.TODO(), http.MethodPost, legacyEndpoint, r)
 	if err != nil {
 		return
@@ -60,13 +82,12 @@ func (s *Sender) SendEvent(evt *GenericEvent.Event, ack, nack, undelivered chan<
 
 	// Send the http request.
 	if s.client == nil {
-		undelivered <- 1
+		s.undeliveredC <- event
 		return
 	}
 	resp, err := s.client.Do(rq)
 	if err != nil {
-		undelivered <- 1
-		evt.Feedback() <- seq
+		s.undeliveredC <- event
 		return
 	}
 
@@ -77,13 +98,11 @@ func (s *Sender) SendEvent(evt *GenericEvent.Event, ack, nack, undelivered chan<
 	switch {
 	case resp.StatusCode/100 == 2:
 		{
-			ack <- 1
-			evt.Success() <- seq
+			s.ackC <- event
 		}
 	default:
 		{
-			nack <- 1
-			evt.Feedback() <- seq
+			s.nackC <- event
 		}
 	}
 }

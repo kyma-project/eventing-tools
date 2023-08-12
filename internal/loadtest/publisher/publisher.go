@@ -8,9 +8,8 @@ import (
 
 	"github.com/kyma-project/eventing-tools/internal/k8s"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/config"
+	"github.com/kyma-project/eventing-tools/internal/loadtest/events"
 	sender2 "github.com/kyma-project/eventing-tools/internal/loadtest/sender"
-	"github.com/kyma-project/eventing-tools/internal/loadtest/sender/cloudevent"
-	"github.com/kyma-project/eventing-tools/internal/loadtest/sender/legacyevent"
 	"github.com/kyma-project/eventing-tools/internal/loadtest/subscription"
 	"github.com/kyma-project/eventing-tools/internal/logger"
 	"github.com/kyma-project/eventing-tools/internal/probes"
@@ -23,34 +22,26 @@ const (
 )
 
 func Start(port int) {
-	appConfig := config.New()
+	//appConfig := config.New()
 	k8sConfig := k8s.ConfigOrDie()
 	k8sClient := k8s.ClientOrDie(k8sConfig)
 	dynamicClient := dynamic.NewForConfigOrDie(k8sConfig)
 
-	legacySender := legacyevent.NewSender(appConfig)
-	legacyEventSender := sender2.NewSender(appConfig, legacySender)
-
-	ceSender := cloudevent.NewSender(appConfig)
-	ceEventSender := sender2.NewSender(appConfig, ceSender)
+	sender, senderC := sender2.NewSender()
+	factory := events.NewGeneratorFactory(senderC)
 
 	config.NewWatcher(k8sClient, Namespace, ConfigMapName).
-		OnAddNotify(legacyEventSender).
-		OnUpdateNotify(legacyEventSender).
-		OnDeleteNotify(legacyEventSender).
-		OnAddNotify(ceEventSender).
-		OnUpdateNotify(ceEventSender).
-		OnDeleteNotify(ceEventSender).
-		OnDeleteNotifyMe().
+		OnAddNotify(sender).
+		OnUpdateNotify(sender).
+		OnDeleteNotify(sender).
 		Watch()
 
+	sender.Start()
+
 	subscription.NewWatcher(dynamicClient).
-		OnAddNotify(ceEventSender).
-		OnUpdateNotify(ceEventSender).
-		OnDeleteNotify(ceEventSender).
-		OnAddNotify(legacyEventSender).
-		OnUpdateNotify(legacyEventSender).
-		OnDeleteNotify(legacyEventSender).
+		OnAddNotify(factory).
+		OnUpdateNotify(factory).
+		OnDeleteNotify(factory).
 		Watch()
 
 	http.HandleFunc(probes.EndpointReadyz, probes.DefaultHandler)

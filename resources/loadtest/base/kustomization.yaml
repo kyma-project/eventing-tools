@@ -17,3 +17,4 @@ resources:
 - rbac.yaml
 - service.yaml
 - subscriber.yaml
+- subscriptions.yaml

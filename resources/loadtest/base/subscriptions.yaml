@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: eventing.kyma-project.io/v1alpha2
+    kind: Subscription
+    metadata:
+      labels:
+        app: partner-handler-queue
+        eventing-loadtest: cloudevent
+      name: cloudevents
+      namespace: eventing-test
+    spec:
+      sink: http://loadtest-subscriber-0.eventing-test.svc.cluster.local
+      config:
+        maxInFlightMessages: "200"
+      source: "cloudevent"
+      typeMatching: standard
+      types:
+        - CE.v8
+        - CE.v16
+        - CE.v32
+        - CE.v64
+        - CE.v128
+        - CE.v256
+        - CE.v512
+  - apiVersion: eventing.kyma-project.io/v1alpha2
+    kind: Subscription
+    metadata:
+      labels:
+        app: partner-handler-queue
+        eventing-loadtest: legacy
+      name: legacy
+      namespace: eventing-test
+    spec:
+      sink: http://loadtest-subscriber-1.eventing-test.svc.cluster.local
+      config:
+        maxInFlightMessages: "200"
+      source: "legacy"
+      typeMatching: standard
+      types:
+        - LEGACY.v8
+        - LEGACY.v16
+        - LEGACY.v32
+        - LEGACY.v64
+        - LEGACY.v128
+        - LEGACY.v256
+        - LEGACY.v512
