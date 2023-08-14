@@ -1,3 +1,4 @@
+[![REUSE status](https://api.reuse.software/badge/github.com/kyma-project/eventing-tools)](https://api.reuse.software/info/github.com/kyma-project/eventing-tools)
 # Eventing Tools
 
 This repository contains useful tools for Kyma Eventing:
