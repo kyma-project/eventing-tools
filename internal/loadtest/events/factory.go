@@ -10,6 +10,8 @@ import (
 	"github.com/kyma-project/eventing-tools/internal/loadtest/subscription"
 )
 
+// this is a dummy PR
+
 type eventGenerator map[string]*Generator
 
 type Factory struct {
