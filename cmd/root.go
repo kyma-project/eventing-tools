@@ -29,5 +29,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolVarP(&loadtest, "loadtest", "l", false, "switch publisher/subscriber to loadtest mode")
+	rootCmd.PersistentFlags().BoolVarP(&loadtest, "loadtest", "l", false, "switch publisher/subscriber to load-test mode")
 }
