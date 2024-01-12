@@ -25,6 +25,7 @@
 #    ./get-version-from-branch.sh || echo "exit with error"
 #    Not on a release branch.
 #    exit with error
+#
 
 # Get the current branch name.
 current_branch=$(git rev-parse --abbrev-ref HEAD)
@@ -49,9 +50,8 @@ if [[ $current_branch =~ ^release-([0-9]+)\.([0-9]+)$ ]]; then
 	# Return the new version.
 	new_version="${x}.${y}.${next_z}"
 	echo "${new_version}"
-	export NEW_VERSION=$new_version
 	exit 0
 else
 	echo "Not on a release branch."
 	exit 1
-fi6
+fi
