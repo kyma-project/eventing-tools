@@ -7,6 +7,27 @@
 # It further looks into the existing tags, looking for ones that start with x.y.
 # If there is none, it will return x.y.0. Otherwise it will return x.y.z where z
 # is the highest existing value increase by one.
+#
+# Examples:
+# 1. The current git branch is 'release-1.0' and git has the tags '1.0.1', '1.0.2', 1.0.3':
+#
+#    $ ./get-version-from-branch.sh
+#    1.0.4
+#
+# 2. The current branch is 'release-1.1' and git has no tags that start with '1.1':
+#
+#    $ ./get-version-from-branch.sh
+#    1.0.0
+#
+# 3. The current branch is 'main':
+#    $ ./get-version-from-branch.sh
+#    Not on a release branch.
+#
+# Please note that this will exit with an error:
+#
+#    ./get-version-from-branch.sh || echo "exit with error"
+#    Not on a release branch.
+#    exit with error
 
 # Get the current branch name.
 current_branch=$(git rev-parse --abbrev-ref HEAD)
@@ -36,4 +57,4 @@ if [[ $current_branch =~ ^release-([0-9]+)\.([0-9]+)$ ]]; then
 else
 	echo "Not on a release branch."
 	exit 1
-fi
+fi6
