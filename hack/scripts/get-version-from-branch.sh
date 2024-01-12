@@ -10,12 +10,10 @@
 #
 # Examples:
 # 1. The current git branch is 'release-1.0' and git has the tags '1.0.1', '1.0.2', 1.0.3':
-#
 #    $ ./get-version-from-branch.sh
 #    1.0.4
 #
 # 2. The current branch is 'release-1.1' and git has no tags that start with '1.1':
-#
 #    $ ./get-version-from-branch.sh
 #    1.0.0
 #
@@ -24,7 +22,6 @@
 #    Not on a release branch.
 #
 # Please note that this will exit with an error:
-#
 #    ./get-version-from-branch.sh || echo "exit with error"
 #    Not on a release branch.
 #    exit with error
