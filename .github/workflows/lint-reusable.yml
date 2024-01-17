@@ -1,0 +1,25 @@
+# This workflow defines a reusable Go linting flow, using Golangci-lint: https://golangci-lint.run/
+# If you want use this workflow, you might want to add some configurations to your repository:
+# https://golangci-lint.run/usage/configuration/
+name: Lint code (reusable)
+
+on:
+  workflow_call:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod" # This uses the Go version defined in the mod file, in contrast to setting a defined version.
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.55
+          args: --timeout=5m
