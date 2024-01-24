@@ -73,6 +73,11 @@ jobs:
             echo "create_pr=true" >> $GITHUB_ENV 
           fi
 
+      - name: Print out content of sec-scanners-config.yaml
+        if: ${{ env.create_pr == 'true' }}
+        shell: bash
+        run: cat sec-scanners-config.yaml
+
       - name: Set Up Git
         if: ${{ env.create_pr == 'true' }}
         env:
