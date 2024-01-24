@@ -129,6 +129,7 @@ jobs:
           echo "PR_URL=${PR_URL}" >> $GITHUB_ENV
 
       - name: USER INTERACTION REQUIRED
+        if: ${{ env.create_pr == 'true' }}
         shell: bash
         env:
           PR_URL: ${{ env.PR_URL }}
@@ -136,6 +137,7 @@ jobs:
           echo "please review  ${PR_URL}"
 
       - name: Wait for PR to be Merged
+        if: ${{ env.create_pr == 'true' }}
         shell: bash
         env:
           TIMEOUT: ${{ inputs.timeout }}
