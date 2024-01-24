@@ -1,4 +1,4 @@
-# This is a reusbale workflow to bump the 'sec-scanners-config.'
+# This is a reusbale workflow to bump the 'sec-scanners-config.yaml'
 #
 # It will do so by using the script `hack/scripts/render-sec-scanners-config.sh`, that is not part of the workflow.
 # If you want to run this workflow against a repo the script must exist in that repo. This is by design, because every repo
@@ -32,7 +32,7 @@
 #       secrets:
 #         BOT_PAT: ${{ secrets.my_pat }}
 
-name: Lint code (reusable)
+name: bump sec-scanner-config.yaml (reusable)
 
 on:
   workflow_call:
