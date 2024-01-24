@@ -32,7 +32,7 @@
 #       secrets:
 #         BOT_PAT: ${{ secrets.my_pat }}
 
-name: bump sec-scanner-config.yaml (reusable)
+name: bump sec-scanners-config.yaml (reusable)
 
 on:
   workflow_call:
