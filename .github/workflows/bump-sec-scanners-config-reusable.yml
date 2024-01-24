@@ -4,6 +4,9 @@
 # If you want to run this workflow against a repo the script must exist in that repo. This is by design, because every repo
 # will require a specfic sec-scanners-config.yaml.
 #
+# The script `render-sec-scanners-config.sh` will in all cases require a version that is used to tag the corresponding image
+# of the controller. For this reason, passing the input `version_tag` is required.
+#
 # To create a PR and monitor it, this workflow will require a classic github personal access token (pat) passed
 # as a secret named `BOT_PAT`. The token must be configured to have all rights for `repo`, `user` and `workflow`.
 # Further reads:
@@ -20,6 +23,7 @@
 #     call-this-workflow:
 #       uses: kyma-project/eventing-tools/.github/workflows/bump-sec-scanners-config-reusable.yml@main
 #       with:
+#         version_tag: 2.3.4
 #         timeout: 3600 # 1 hour
 #       secrets:
 #         BOT_PAT: ${{ secrets.my_pat }}
@@ -29,6 +33,8 @@
 #   jobs:
 #     call-this-workflow::working_dir:  g
 #       uses: kyma-project/eventing-tools/.github/workflows/bump-sec-scanners-config-reusable.yml@main
+#       with:
+#         version_tag: 2.3.4
 #       secrets:
 #         BOT_PAT: ${{ secrets.my_pat }}
 
@@ -37,6 +43,10 @@ name: bump sec-scanners-config.yaml (reusable)
 on:
   workflow_call:
     inputs:
+      version_tag:
+        required: true
+        type: string
+        description: The semantic version number, that will be used to tag the main image in the sec scanner config.
       timeout:
         required: false
         type: number
@@ -58,9 +68,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Render sec-scanners-config.yaml
+        env:
+          VERSION_TAG: ${{ inputs.version_tag }}
         shell: bash
         # Where ever you use this workflow, the script hack/scripts/render-sec-scanners-config.sh must exist.
-        run: ./hack/scripts/render-sec-scanners-config.sh
+        run: ./hack/scripts/render-sec-scanners-config.sh "${VERSION_TAG}"
 
       # Check if there are changes so we can determin if all following steps can be skipped.
       - name: Check For Changes
