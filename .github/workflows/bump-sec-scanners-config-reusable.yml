@@ -1,0 +1,157 @@
+# This is a reusbale workflow to bump the 'sec-scanners-config.'
+#
+# It will do so by using the script `hack/scripts/render-sec-scanners-config.sh`, that is not part of the workflow.
+# If you want to run this workflow against a repo the script must exist in that repo. This is by design, because every repo
+# will require a specfic sec-scanners-config.yaml.
+#
+# To create a PR and monitor it, this workflow will require a classic github personal access token (pat) passed
+# as a secret named `BOT_PAT`. The token must be configured to have all rights for `repo`, `user` and `workflow`.
+# Further reads:
+#   Setting a secret for a repo: https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions
+#
+# If changes were done by the script, the workflow will create a PR and wait for it to be merged.
+# The waiting will happen with a timeout that can be set via the input of `timeout`. The units are seconds.
+# It has a default value if 3600 (seconds (= 1 hour)).
+#
+# Examples of using this workflow:
+#  1. Set all awailable inputs and secrets.
+#
+#   jobs:
+#     call-this-workflow:
+#       uses: kyma-project/eventing-tools/.github/workflows/bump-sec-scanners-config-reusable.yml@main
+#       with:
+#         timeout: 3600 # 1 hour
+#       secrets:
+#         BOT_PAT: ${{ secrets.my_pat }}
+#
+#  2. Minimal setup:
+#
+#   jobs:
+#     call-this-workflow::working_dir:  g
+#       uses: kyma-project/eventing-tools/.github/workflows/bump-sec-scanners-config-reusable.yml@main
+#       secrets:
+#         BOT_PAT: ${{ secrets.my_pat }}
+
+name: Lint code (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      timeout:
+        required: false
+        type: number
+        description: The time in seconds this workflow will wait for a resulting PR to be merged.
+        default: 3600 # 1 hour
+    secrets:
+      BOT_PAT:
+        required: true
+
+jobs:
+  bump:
+    name: Bump sec-scanners-config.yaml
+    runs-on: ubuntu-latest
+    env:
+      REPO: ${{ github.repository }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Render sec-scanners-config.yaml
+        shell: bash
+        # Where ever you use this workflow, the script hack/scripts/render-sec-scanners-config.sh must exist.
+        run: ./hack/scripts/render-sec-scanners-config.sh
+
+      # Check if there are changes so we can determin if all following steps can be skipped.
+      - name: Check For Changes
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then 
+            echo "No changes found. No need to create a PR" 
+          else 
+            echo "Changes found. Creating a PR and waiting for it to be merged." 
+            echo "create_pr=true" >> $GITHUB_ENV 
+          fi
+
+      - name: Set Up Git
+        if: ${{ env.create_pr == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
+        shell: bash
+        run: |
+          # set git username 
+          ghusername=$(curl -H "Authorization: token ${GH_TOKEN}" https://api.github.com/user)
+          git config user.name "${ghusername}"
+          # set git mail address
+          ghmailaddress=$(curl -H "Authorization: token ${GH_TOKEN}" https://api.github.com/email)
+          git config user.email "${ghmailaddress}"
+          # set remote url
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+
+      - name: Set All Variables
+        if: ${{ env.create_pr == 'true' }}
+        shell: bash
+        run: |
+          CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+          echo "current branch: ${CURRENT_BRANCH}"
+          echo "CURRENT_BRANCH=${CURRENT_BRANCH}" >> $GITHUB_ENV
+
+          PR_DATE="$(date '+%Y-%m-%d-%H-%M-%S')"
+          echo "pr date: ${PR_DATE}"
+          echo "PR_DATE=${PR_DATE}" >> $GITHUB_ENV
+
+          BRANCH_NAME="sec-scanners-bump-${CURRENT_BRANCH}-${PR_DATE}"
+          echo "name of the new branch: ${BRANCH_NAME}"
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+
+      - name: Create a Pull Request
+        if: ${{ env.create_pr == 'true' }}
+        env:
+          CURRENT_BRANCH: ${{ env.CURRENT_BRANCH }}
+          PR_DATE: ${{ env.PR_DATE }}
+          BRANCH_NAME: ${{ env.BRANCH_NAME }}
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
+        shell: bash
+        run: |
+          # Create a new branch for our changes.
+          git checkout -b "${BRANCH_NAME}"
+
+          # Stage the changes to sec-scanner-config.yaml and create a commit.
+          git add sec-scanners-config.yaml
+          git commit -m "auto-bump sec-scanners-config: ${PR_DATE}"
+
+          # Push the changes to origin, as defined earlier.
+          git push origin "$BRANCH_NAME"
+
+          # Create a PR.
+          BODY="This is an auto-generated PR to bump the sec-scanners-config.yml on ${REPO}."
+          PR_URL=$(gh pr create --base "${CURRENT_BRANCH}" --head "${BRANCH_NAME}" --title "Bump sec-scanners-config on ${CURRENT_BRANCH}" --body "${BODY}")
+          echo "PR_URL=${PR_URL}" >> $GITHUB_ENV
+
+      - name: USER INTERACTION REQUIRED
+        shell: bash
+        env:
+          PR_URL: ${{ env.PR_URL }}
+        run: |
+          echo "please review  ${PR_URL}"
+
+      - name: Wait for PR to be Merged
+        shell: bash
+        env:
+          TIMEOUT: ${{ inputs.timeout }}
+          PR_URL: ${{ env.PR_URL }}
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
+        run: |
+          end_time=$((SECONDS+${TIMEOUT}))
+
+          while [ $SECONDS -lt $end_time ]; do
+            pr_state=$(gh pr view ${PR_URL} --json state --jq '.state')
+            if [ "$pr_state" == "MERGED" ]; then
+              echo "PR has been merged!"
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "Timeout reached. PR not merged within the specified time."
+          exit 1
