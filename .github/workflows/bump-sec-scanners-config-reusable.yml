@@ -167,7 +167,9 @@ jobs:
 
           while [ $SECONDS -lt $end_time ]; do
             pr_state=$(gh pr view ${PR_URL} --json state --jq '.state')
-            if [ "$pr_state" == "MERGED" ]; then
+            if [ "$pr_state" == "CLOSED" ]; then 
+              echo "ERROR! PR has been closed!"
+            elif [ "$pr_state" == "MERGED" ]; then
               echo "PR has been merged!"
               exit 0
             fi
