@@ -14,7 +14,9 @@
 #
 # If changes were done by the script, the workflow will create a PR and wait for it to be merged.
 # The waiting will happen with a timeout that can be set via the input of `timeout`. The units are seconds.
-# It has a default value of 3600 (seconds (= 1 hour)).
+# It has a default value of 3600 (seconds (= 1 hour)). Note that GitHub Action jobs will automatically fail after 6 hours:
+# Further reads:
+#   Default limits for GitHub Actions: https://docs.github.com/en/actions/learn-github-actions/usage-limits-billing-and-administration#usage-limits
 #
 # Examples of using this workflow:
 #  1. Set all awailable inputs and secrets.
@@ -169,6 +171,7 @@ jobs:
             pr_state=$(gh pr view ${PR_URL} --json state --jq '.state')
             if [ "$pr_state" == "CLOSED" ]; then 
               echo "ERROR! PR has been closed!"
+              exit 1
             elif [ "$pr_state" == "MERGED" ]; then
               echo "PR has been merged!"
               exit 0
