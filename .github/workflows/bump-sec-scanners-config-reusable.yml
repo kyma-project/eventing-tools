@@ -1,4 +1,4 @@
-# This is a reusbale workflow to bump the 'sec-scanners-config.yaml'
+# This is a reusable workflow to bump the 'sec-scanners-config.yaml'
 #
 # It will do so by using the script `hack/scripts/render-sec-scanners-config.sh`, that is not part of the workflow.
 # If you want to run this workflow against a repo the script must exist in that repo. This is by design, because every repo
@@ -82,16 +82,18 @@ jobs:
             echo "No changes found. No need to create a PR" 
           else 
             echo "Changes found. Creating a PR and waiting for it to be merged." 
-            echo "create_pr=true" >> $GITHUB_ENV 
+            echo "CREATE_PR=true" >> $GITHUB_ENV 
           fi
 
       - name: Print Content of sec-scanners-config.yaml
-        if: ${{ env.create_pr == 'true' }}
+        if: ${{ always() }}
         shell: bash
-        run: cat sec-scanners-config.yaml
+        run: |
+          FILE="sec-scanners-config.yaml"
+          [ -f "${FILE}" ] && cat "${FILE}" || echo "${FILE} not found."
 
       - name: Set Up Git
-        if: ${{ env.create_pr == 'true' }}
+        if: ${{ env.CREATE_PR == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT }}
         shell: bash
@@ -106,7 +108,7 @@ jobs:
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
 
       - name: Set All Variables
-        if: ${{ env.create_pr == 'true' }}
+        if: ${{ env.CREATE_PR == 'true' }}
         shell: bash
         run: |
           CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
@@ -122,7 +124,7 @@ jobs:
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
 
       - name: Create a Pull Request
-        if: ${{ env.create_pr == 'true' }}
+        if: ${{ env.CREATE_PR == 'true' }}
         env:
           CURRENT_BRANCH: ${{ env.CURRENT_BRANCH }}
           PR_DATE: ${{ env.PR_DATE }}
@@ -146,7 +148,7 @@ jobs:
           echo "PR_URL=${PR_URL}" >> $GITHUB_ENV
 
       - name: USER INTERACTION REQUIRED
-        if: ${{ env.create_pr == 'true' }}
+        if: ${{ env.CREATE_PR == 'true' }}
         shell: bash
         env:
           PR_URL: ${{ env.PR_URL }}
@@ -154,7 +156,7 @@ jobs:
           echo "please review  ${PR_URL}"
 
       - name: Wait for PR to be Merged
-        if: ${{ env.create_pr == 'true' }}
+        if: ${{ env.CREATE_PR == 'true' }}
         shell: bash
         env:
           TIMEOUT: ${{ inputs.timeout }}
