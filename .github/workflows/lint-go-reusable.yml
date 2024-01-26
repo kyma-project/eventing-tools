@@ -16,8 +16,9 @@ on:
         description: "The URI to the linter config file. This can be a local file or a remote file. E.g. https://raw.githubusercontent.com/kyma-project/eventing-tools/main/config/lint/.golangci.yaml"
 
 jobs:
-  unit:
+  go-lint:
     runs-on: ubuntu-latest
+    name: Lint Go Code
     steps:
       - name: Setup Go
         uses: actions/setup-go@v5
