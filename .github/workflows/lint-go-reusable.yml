@@ -1,0 +1,48 @@
+# This workflow defines a reusable Go linting flow, using Golangci-lint: https://golangci-lint.run/
+# If you want use this workflow, you might want to add some configurations to your repository:
+# https://golangci-lint.run/usage/configuration/
+name: Lint code (reusable)
+
+on:
+  pull_request:
+    branches:
+      - "main"
+      - "release-*"
+      - "dev-*"
+      - "basic-*"
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+      - "sec-scanners-config.yaml"
+  workflow_call:
+    inputs:
+      go-version:
+        required: true
+        type: string
+        description: "The Go version to use. This can be a specific version. eg. 1.19 or 1.21.x"
+      lint-config-uri:
+        required: true
+        type: string
+        description: "The URI to the linter config file. This can be a local file or a remote file. eg. https://raw.githubusercontent.com/kyma-project/eventing-tools/main/config/lint/.golangci.yaml"
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }} # This can be a specific version. eg. 1.19 or 1.21.x
+          cache: false # Disable cache to avoid issues with different Go versions
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download linter config
+        run: wget -O .golangci.yaml ${{ inputs.lint-config-uri }} # This can be a local file or a remote file. eg. https://raw.githubusercontent.com/kyma-project/eventing-tools/main/config/lint/.golangci.yaml
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.55
+          args: --timeout=5m --config=./.golangci.yaml --issues-exit-code 1 # Failed if any issues are found
