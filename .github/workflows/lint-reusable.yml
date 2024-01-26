@@ -3,8 +3,14 @@
 # https://golangci-lint.run/usage/configuration/
 name: Lint code (reusable)
 
+
 on:
   workflow_call:
+    inputs:
+      lint-config-uri:
+        required: true
+        type: string
+        description: 'The URI to the linter config file. This can be a local file or a remote file. eg. https://raw.githubusercontent.com/kyma-project/eventing-tools/main/config/lint/.golangci.yaml'
 
 jobs:
   unit:
@@ -12,6 +18,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Download linter config
+        run: wget -O .golangci.yaml ${{ inputs.lint-config-uri }}
 
       - name: Setup Go
         uses: actions/setup-go@v5
