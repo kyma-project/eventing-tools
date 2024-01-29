@@ -35,7 +35,6 @@ linters:
     - wrapcheck
     ### Disable linters one by one
     - gci
-    - tagalign
     - gomoddirectives
     - gofumpt
     - goerr113
