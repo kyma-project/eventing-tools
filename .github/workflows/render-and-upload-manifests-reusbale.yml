@@ -1,4 +1,4 @@
-name: Render and upload manifests
+name: Render and upload manifests (reusable)
 
 on:
   workflow_call:
@@ -33,6 +33,7 @@ jobs:
           VERSION: ${{ inputs.VERSION }}
           CRD_FILE: ${{ inputs.CRD_FILE }}
         shell: bash
+        # Note: your repository needs to have this script.
         run: ./hack/scripts/render_crd.sh "${VERSION}" "${CRD_FILE}"
 
       - name: Print out CR file

@@ -25,10 +25,10 @@ jobs:
       - name: Write changelog to file
         env:
           VERSION: ${{ inputs.VERSION }}
-        # note: your repository needs to have this file.
-        # running this script should result in the file named CHANGELOG.md.
         shell: bash
         run: |
+          # Note: your repository needs to have this script.
+          # Running this script should result in a file named CHANGELOG.md, located in the base directory.
           ./hack/scripts/create_changelog.sh "${VERSION}"
 
       - name: Print out changelog
