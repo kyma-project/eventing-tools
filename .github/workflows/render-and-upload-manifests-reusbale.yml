@@ -1,0 +1,59 @@
+name: Render and upload manifests
+
+on:
+  workflow_call:
+    inputs:
+      VERSION:
+        required: true
+        type: string
+        description: The semantic version number.
+      CR_FILE:
+        type: string
+        required: true
+        description: The file name of the CR.
+      CRD_FILE:
+        type: string
+        required: true
+        description: The file name of the CRD.
+    secrets:
+      BOT_PAT:
+        required: true
+        description: The github personal access token of your bot.
+
+jobs:
+  render-and-upload-manifests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Render CRD
+        env:
+          VERSION: ${{ inputs.VERSION }}
+          CRD_FILE: ${{ inputs.CRD_FILE }}
+        shell: bash
+        run: ./hack/scripts/render_crd.sh "${VERSION}" "${CRD_FILE}"
+
+      - name: Print out CR file
+        env:
+          CR_FILE: ${{ inputs.CR_FILE }}
+        shell: bash
+        run: cat "${CR_FILE}"
+
+      - name: Print out CRD file
+        env:
+          CRD_FILE: ${{ inputs.CRD_FILE }}
+        shell: bash
+        run: cat "${CRD_FILE}"
+
+      - name: Upload manifests
+        env:
+          VERSION: ${{ inputs.VERSION }}
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
+          CRD_FILE: ${{ inputs.CRD_FILE }}
+          CR_FILE: ${{ inputs.CR_FILE }}
+        shell: bash
+        run: |
+          gh release upload "${VERSION}" "${CR_FILE}"
+          gh release upload "${VERSION}" "${CRD_FILE}"

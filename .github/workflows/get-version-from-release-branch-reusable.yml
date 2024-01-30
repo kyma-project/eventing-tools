@@ -1,0 +1,45 @@
+name: Get version from release branch (reusable)
+
+on:
+  workflow_call:
+    outputs:
+      VERSION:
+        description: "The semantic version x.y.z, e.g.: 1.7.4"
+        value: ${{ jobs.create-version.outputs.VERSION }}
+
+jobs:
+  create-version:
+    name: generate version number
+    runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.generate.outputs.VERSION }}
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify that the current is branch is a release branch
+        shell: bash
+        run: |
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          [[ $CURRENT_BRANCH =~ ^release-([0-9]+)\.([0-9]+)$ ]] || exit 1
+          echo "MAJOR=${BASH_REMATCH[1]}" >> $GITHUB_ENV
+          echo "MINOR=${BASH_REMATCH[2]}" >> $GITHUB_ENV
+          exit 0
+
+      - name: Generate version
+        id: generate
+        shell: bash
+        env:
+          MAJOR: ${{ env.MAJOR }}
+          MINOR: ${{ env.MINOR }}
+        run: |
+          TAGS=$(git tag -l "$MAJOR.$MINOR.*")
+          if [[ -z $TAGS ]]; then
+            PATCH=0
+          else
+            PATCH=$(( $(echo $TAGS | cut -d '.' -f 3 | sort -n | tail -n 1) + 1))
+          fi
+          VERSION="${MAJOR}.${MINOR}.${PATCH:-0}"
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          exit 0
