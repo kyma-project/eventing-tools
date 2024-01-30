@@ -34,8 +34,6 @@ linters:
     - varnamelen
     - wrapcheck
     ### Disable linters one by one
-    - gomoddirectives
-    - gofumpt
     - goerr113
     - funlen
     - testifylint
