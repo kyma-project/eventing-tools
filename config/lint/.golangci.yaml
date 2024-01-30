@@ -49,6 +49,9 @@ linters:
 
 
 linters-settings:
+  gomoddirectives:
+    replace-allow-list:
+      - github.com/prometheus/client_golang
   stylecheck:
     dot-import-whitelist:
       - github.com/onsi/ginkgo/v2
