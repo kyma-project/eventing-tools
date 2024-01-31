@@ -34,7 +34,6 @@ linters:
     - varnamelen
     - wrapcheck
     ### Disable linters one by one
-    - goerr113
     - funlen
     - testifylint
     - bodyclose
