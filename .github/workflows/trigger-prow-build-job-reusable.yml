@@ -1,0 +1,72 @@
+name: Trigger prow build job (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      VERSION:
+        required: true
+        type: string
+        description: The semantic version number.
+      TIMEOUT:
+        type: number
+        default: 60000 # 10 minutes in miliseconds
+      INTERVAL:
+        type: number
+        default: 60000 # 1 minute in miliseconds
+      CONTEXT:
+        required: true
+        type: string
+        description: The context is the name of the prow job we are waiting for.
+    secrets:
+      BOT_PAT:
+        required: true
+      GH_TOKEN:
+        required: true
+
+jobs:
+  trigger-prow-build-job:
+    name: Trigger prow build job
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up git
+        if: ${{ env.CREATE_PR == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          # set git username 
+          ghusername=$(curl -s -H "Authorization: token ${GH_TOKEN}" https://api.github.com/user | jq '.login')
+          git config user.name "${ghusername}"
+          # set git mail address
+          ghmailaddress="${ghusername}@users.noreply.github.com"
+          git config user.email "${ghmailaddress}"
+          # set remote url
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+
+      - name: Push git tag to trigger the prow build job
+        env:
+          VERSION: ${{ inputs.VERSION }}
+        run: |
+          git tag "${VERSION}"
+          git push origin "${VERSION}"
+
+      - name: Wait for the build job to succeed
+        id: wait-build
+        uses: kyma-project/wait-for-commit-status-action@2b3ffe09af8b6f40e1213d5fb7f91a7bd41ffb20
+        env:
+          GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
+          GITHUB_OWNER: "${{ github.repository_owner }}"
+          GITHUB_REPO: ${{ github.event.repository.name }}
+          VERSION: "${{ inputs.VERSION }}"
+        with:
+          context: "${{ inputs.CONTEXT }}"
+          commit_ref: "release-${VERSION}" # the name of the release branch.
+          timeout:
+            600000 # 10 minutes in milliseconds
+            # The check interval is kept long otherwise it will exhaust the GitHub rate limit (More info: https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#rate-limiting)
+          check_interval: 60000 # 1 minute in milliseconds
