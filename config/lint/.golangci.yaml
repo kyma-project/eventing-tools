@@ -18,7 +18,6 @@ linters:
     - sqlclosecheck # not needed for this project
     - varcheck # deprecated (since v1.49.0) and replaced by 'unused'
     - wsl # too strict and mostly code is not more readable
-    ### disabled for now... will be enabled 1 by 1
     - dupl
     - forcetypeassert
     - gosec
@@ -33,7 +32,6 @@ linters:
     - unconvert
     - varnamelen
     - wrapcheck
-    ### Disable linters one by one
     - testifylint
     - bodyclose
     - containedctx
