@@ -6,7 +6,7 @@ This repository contains useful tools for Kyma Eventing:
 - [Loadtest](./docs/loadtest/README.md) for load-testing the Eventing components by continuously sending and receiving cloudevents.
 - [Publisher](./docs/publisher/README.md) for publishing legacy and cloudevents continuously.
 - [Subscriber](./docs/subscriber/README.md) for consuming cloudevents.
-
+- [Linter settings for Kyma modules](https://github.tools.sap/skydivingtunas/how-to/blob/master/golangci-lint-configuration.md)
 > Note: The `publisher` and the `subscriber` are using the same Eventing infrastructure (e.g. Kyma subscriptions, subscribers, ...etc).
 > This could be useful when verifying Eventing on any cluster by deploying both applications and watching their logs.
 

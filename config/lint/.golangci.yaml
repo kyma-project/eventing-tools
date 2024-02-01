@@ -12,13 +12,12 @@ linters:
     - lll
     - maligned # deprecated (since v1.38.0)
     - nlreturn # too strict and mostly code is not more readable
-    - nosnakecase  # deprecated (since v1.48.1) and replaced by 'revive'
+    - nosnakecase # deprecated (since v1.48.1) and replaced by 'revive'
     - scopelint # deprecated (since v1.39.0) and replaced by 'exportloopref'
     - structcheck # deprecated (since v1.49.0) and replaced by 'unused'
     - sqlclosecheck # not needed for this project
     - varcheck # deprecated (since v1.49.0) and replaced by 'unused'
     - wsl # too strict and mostly code is not more readable
-    ### disabled for now... will be enabled 1 by 1
     - dupl
     - forcetypeassert
     - gosec
@@ -33,19 +32,12 @@ linters:
     - unconvert
     - varnamelen
     - wrapcheck
-    ### Disable linters one by one
-    - funlen
     - testifylint
     - bodyclose
     - containedctx
-    - thelper
     - tagliatelle
     - errchkjson
-    - perfsprint
     - noctx
-    - godox
-    - goconst
-
 
 linters-settings:
   gomoddirectives:
@@ -67,20 +59,20 @@ linters-settings:
       - name: line-length-limit
         severity: warning
         disabled: true
-        arguments: [ 120 ]
+        arguments: [120]
   funlen:
-    lines: 80
+    lines: 100
   cyclop:
     max-complexity: 20
   nestif:
     min-complexity: 6
   gci:
     sections:
-      - standard                                             # Standard packages.
-      - default                                              # Imports that could not be matched to another section type.
-      - prefix(github.com/kyma-project/eventing-manager)    # Imports with the specified prefix.
-      - blank                                                # Blank imports.
-      - dot                                                  # Dot imports.
+      - standard # Standard packages.
+      - default # Imports that could not be matched to another section type.
+      - prefix(github.com/kyma-project/eventing-manager) # Imports with the specified prefix.
+      - blank # Blank imports.
+      - dot # Dot imports.
     custom-order: true
     skip-generated: true
   importas:
@@ -114,24 +106,22 @@ linters-settings:
         alias: eppapi
       - pkg: github.com/kyma-project/eventing-publisher-proxy/pkg/nats
         alias: eppnats
-      - pkg : github.com/kyma-project/eventing-manager/pkg/logger
+      - pkg: github.com/kyma-project/eventing-manager/pkg/logger
         alias: emlogger
       - pkg: github.com/kyma-project/eventing-manager/api/eventing/v1alpha1
         alias: emeventingv1alpha1
       - pkg: github.com/kyma-project/eventing-manager/api/eventing/v1alpha2
         alias: emeventingv2alpha1
-      - pkg : github.com/cloudevents/sdk-go/v2
+      - pkg: github.com/cloudevents/sdk-go/v2
         alias: ce
-      - pkg : github.com/cloudevents/sdk-go/v2/protocol/http
+      - pkg: github.com/cloudevents/sdk-go/v2/protocol/http
         alias: cehttp
-      - pkg : github.com/cloudevents/sdk-go/v2/event
+      - pkg: github.com/cloudevents/sdk-go/v2/event
         alias: ceevent
-      - pkg : github.com/cloudevents/sdk-go/v2/client
+      - pkg: github.com/cloudevents/sdk-go/v2/client
         alias: ceclient
-      - pkg : github.com/kyma-project/kyma/components/central-application-gateway/pkg/apis/applicationconnector/v1alpha1
+      - pkg: github.com/kyma-project/kyma/components/central-application-gateway/pkg/apis/applicationconnector/v1alpha1
         alias: kymaappconnv1alpha1
-      
-
 
   ireturn:
     allow:
@@ -153,7 +143,7 @@ issues:
         - funlen # Table driven unit and integration tests exceed function length by design
         - maintidx # Table driven unit and integration tests exceed maintainability index by design
     - linters:
-      - importas
+        - importas
       text: has alias "" which is not part of config # Ignore false positives that emerged due to https://github.com/julz/importas/issues/15.
   max-issues-per-linter: 0
   max-same-issues: 0
