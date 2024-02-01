@@ -34,18 +34,13 @@ linters:
     - varnamelen
     - wrapcheck
     ### Disable linters one by one
-    - funlen
     - testifylint
     - bodyclose
     - containedctx
-    - thelper
     - tagliatelle
     - errchkjson
-    - perfsprint
     - noctx
-    - godox
-    - goconst
-
+    
 
 linters-settings:
   gomoddirectives:
@@ -69,7 +64,7 @@ linters-settings:
         disabled: true
         arguments: [ 120 ]
   funlen:
-    lines: 80
+    lines: 100
   cyclop:
     max-complexity: 20
   nestif:
