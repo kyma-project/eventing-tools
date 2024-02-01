@@ -35,6 +35,14 @@ jobs:
         # Note: your repository needs to have this script.
         run: ./hack/scripts/render_crd.sh "${VERSION}"
 
+      - name: Rename CR file
+        shell: bash
+        env:
+          CR_FILE: ${{ inputs.CR_FILE }}
+        run: |
+          # this is where all our default CRs are located.
+          ln -s config/samples/default.yaml "./${CR_FILE}"
+
       - name: Print out CR file
         env:
           CR_FILE: ${{ inputs.CR_FILE }}
