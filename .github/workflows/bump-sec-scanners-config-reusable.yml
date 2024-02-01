@@ -67,6 +67,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: "Setup yq" # Required for rendering the sec-scanners-config.
+        uses: dcarbone/install-yq-action@v1.1.1
+
       - name: Render sec-scanners-config.yaml
         env:
           VERSION: ${{ inputs.VERSION }}
