@@ -70,6 +70,7 @@ jobs:
       - name: Render sec-scanners-config.yaml
         env:
           VERSION: ${{ inputs.VERSION }}
+        shell: bash
         # Where ever you use this workflow, the script hack/scripts/render-sec-scanners-config.sh must exist.
         run: ./hack/scripts/render-sec-scanners-config.sh "${VERSION}"
 
@@ -84,8 +85,8 @@ jobs:
             echo "CREATE_PR=true" >> $GITHUB_ENV 
           fi
 
-        if: ${{ always() }}
       - name: Print out sec-scanners-config.yaml
+        if: ${{ always() }}
         shell: bash
         run: |
           FILE="sec-scanners-config.yaml"
@@ -156,8 +157,8 @@ jobs:
         run: |
           echo "please review  ${PR_URL}"
 
-        if: ${{ env.CREATE_PR == 'true' }}
       - name: Wait for PR to be merged
+        if: ${{ env.CREATE_PR == 'true' }}
         shell: bash
         env:
           TIMEOUT: ${{ inputs.TIMEOUT }}
