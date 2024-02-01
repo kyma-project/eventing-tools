@@ -25,6 +25,7 @@ jobs:
       - name: Write changelog to file
         env:
           VERSION: ${{ inputs.VERSION }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         shell: bash
         run: |
           # Note: your repository needs to have this script.
