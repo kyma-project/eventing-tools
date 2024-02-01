@@ -31,10 +31,9 @@ jobs:
       - name: Render CRD
         env:
           VERSION: ${{ inputs.VERSION }}
-          CRD_FILE: ${{ inputs.CRD_FILE }}
         shell: bash
         # Note: your repository needs to have this script.
-        run: ./hack/scripts/render_crd.sh "${VERSION}" "${CRD_FILE}"
+        run: ./hack/scripts/render_crd.sh "${VERSION}"
 
       - name: Print out CR file
         env:
