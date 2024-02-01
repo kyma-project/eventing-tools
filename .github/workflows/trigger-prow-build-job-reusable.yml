@@ -27,7 +27,8 @@ jobs:
   trigger-prow-build-job:
     name: Trigger prow build job
     runs-on: ubuntu-latest
-
+    env:
+      VERSION: ${{ inputs.VERSION }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,8 +50,6 @@ jobs:
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
 
       - name: Push git tag to trigger the prow build job
-        env:
-          VERSION: ${{ inputs.VERSION }}
         run: |
           git tag "${VERSION}"
           git push origin "${VERSION}"
@@ -62,11 +61,8 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
           GITHUB_OWNER: "${{ github.repository_owner }}"
           GITHUB_REPO: ${{ github.event.repository.name }}
-          VERSION: "${{ inputs.VERSION }}"
         with:
           context: "${{ inputs.CONTEXT }}"
           commit_ref: "release-${VERSION}" # the name of the release branch.
-          timeout:
-            600000 # 10 minutes in milliseconds
-            # The check interval is kept long otherwise it will exhaust the GitHub rate limit (More info: https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#rate-limiting)
-          check_interval: 60000 # 1 minute in milliseconds
+          timeout: ${{ inputs.TIMEOUT }}
+          check_interval: ${{ inputs.INTERVAL }}
