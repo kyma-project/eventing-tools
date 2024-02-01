@@ -1,0 +1,44 @@
+name: Create draft release (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      VERSION:
+        required: true
+        type: string
+        description: The semantic version number.
+    secrets:
+      BOT_PAT:
+        required: true
+        description: The github personal access token of your bot.
+      GH_TOKEN:
+        required: true
+
+jobs:
+  create-draft-release:
+    name: Create a draft release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Write changelog to file
+        env:
+          VERSION: ${{ inputs.VERSION }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        shell: bash
+        run: |
+          # Note: your repository needs to have this script.
+          # Running this script should result in a file named CHANGELOG.md, located in the base directory.
+          ./hack/scripts/create_changelog.sh "${VERSION}"
+
+      - name: Print out changelog
+        run: cat CHANGELOG.md
+
+      - name: Create the draft release
+        env:
+          VERSION: ${{ inputs.VERSION }}
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
+        shell: bash
+        run: |
+          gh release create "${VERSION}" --draft --notes-file CHANGELOG.md

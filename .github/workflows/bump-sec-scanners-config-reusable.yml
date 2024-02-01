@@ -5,7 +5,7 @@
 # will require a specfic sec-scanners-config.yaml.
 #
 # The script `render-sec-scanners-config.sh` will in all cases require a version that is used to tag the corresponding image
-# of the controller. For this reason, passing the input `version_tag` is required.
+# of the controller. For this reason, passing the input `VERSION` is required.
 #
 # To create a PR and monitor it, this workflow will require a classic github personal access token (pat) passed
 # as a secret named `BOT_PAT`. The token must be configured to have all rights for `repo`, `user` and `workflow`.
@@ -13,10 +13,10 @@
 #   Setting a secret for a repo: https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions
 #
 # If changes were done by the script, the workflow will create a PR and wait for it to be merged.
-# The waiting will happen with a timeout that can be set via the input of `timeout`. The units are seconds.
 # It has a default value of 3600 (seconds (= 1 hour)). Note that GitHub Action jobs will automatically fail after 6 hours:
 # Further reads:
 #   Default limits for GitHub Actions: https://docs.github.com/en/actions/learn-github-actions/usage-limits-billing-and-administration#usage-limits
+# The waiting will happen with a timeout that can be set via the input of `TIMEOUT`. The units are seconds.
 #
 # Examples of using this workflow:
 #  1. Set all awailable inputs and secrets.
@@ -25,8 +25,8 @@
 #     call-this-workflow:
 #       uses: kyma-project/eventing-tools/.github/workflows/bump-sec-scanners-config-reusable.yml@main
 #       with:
-#         version_tag: 2.3.4
-#         timeout: 3600 # 1 hour
+#         VERSION: 2.3.4
+#         TIMEOUT: 3600 # 1 hour
 #       secrets:
 #         BOT_PAT: ${{ secrets.my_pat }}
 #
@@ -36,7 +36,7 @@
 #     call-this-workflow::working_dir:  g
 #       uses: kyma-project/eventing-tools/.github/workflows/bump-sec-scanners-config-reusable.yml@main
 #       with:
-#         version_tag: 2.3.4
+#         VERSION: 2.3.4
 #       secrets:
 #         BOT_PAT: ${{ secrets.my_pat }}
 
@@ -45,11 +45,11 @@ name: bump sec-scanners-config.yaml (reusable)
 on:
   workflow_call:
     inputs:
-      version_tag:
+      VERSION:
         required: true
         type: string
         description: The semantic version number, that will be used to tag the main image in the sec scanner config.
-      timeout:
+      TIMEOUT:
         required: false
         type: number
         description: The time in seconds this workflow will wait for a resulting PR to be merged.
@@ -62,22 +62,23 @@ jobs:
   bump:
     name: Bump sec-scanners-config.yaml
     runs-on: ubuntu-latest
-    env:
-      REPO: ${{ github.repository }}
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: "Setup yq" # Required for rendering the sec-scanners-config.
+        uses: dcarbone/install-yq-action@v1.1.1
 
       - name: Render sec-scanners-config.yaml
         env:
-          VERSION_TAG: ${{ inputs.version_tag }}
+          VERSION: ${{ inputs.VERSION }}
         shell: bash
         # Where ever you use this workflow, the script hack/scripts/render-sec-scanners-config.sh must exist.
-        run: ./hack/scripts/render-sec-scanners-config.sh "${VERSION_TAG}"
+        run: ./hack/scripts/render-sec-scanners-config.sh "${VERSION}"
 
       # Check if there are changes so we can determin if all following steps can be skipped.
-      - name: Check For Changes
+      - name: Check for changes
         shell: bash
         run: |
           if [ -z "$(git status --porcelain)" ]; then 
@@ -87,29 +88,30 @@ jobs:
             echo "CREATE_PR=true" >> $GITHUB_ENV 
           fi
 
-      - name: Print Content of sec-scanners-config.yaml
+      - name: Print out sec-scanners-config.yaml
         if: ${{ always() }}
         shell: bash
         run: |
           FILE="sec-scanners-config.yaml"
           [ -f "${FILE}" ] && cat "${FILE}" || echo "${FILE} not found."
 
-      - name: Set Up Git
+      - name: Set up git
         if: ${{ env.CREATE_PR == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT }}
+          REPO: ${{ github.repository }}
         shell: bash
         run: |
           # set git username 
-          ghusername=$(curl -H "Authorization: token ${GH_TOKEN}" https://api.github.com/user)
+          ghusername=$(curl -s -H "Authorization: token ${GH_TOKEN}" https://api.github.com/user | jq '.login')
           git config user.name "${ghusername}"
           # set git mail address
-          ghmailaddress=$(curl -H "Authorization: token ${GH_TOKEN}" https://api.github.com/email)
-          git config user.email "${ghmailaddress}"
+          ghemailaddress="${ghusername}@users.noreply.github.com"
+          git config user.email "${ghemailaddress}"
           # set remote url
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
 
-      - name: Set All Variables
+      - name: Set all variables
         if: ${{ env.CREATE_PR == 'true' }}
         shell: bash
         run: |
@@ -125,9 +127,10 @@ jobs:
           echo "name of the new branch: ${BRANCH_NAME}"
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
 
-      - name: Create a Pull Request
+      - name: Create a pull request
         if: ${{ env.CREATE_PR == 'true' }}
         env:
+          REPO: ${{ github.repository }}
           CURRENT_BRANCH: ${{ env.CURRENT_BRANCH }}
           PR_DATE: ${{ env.PR_DATE }}
           BRANCH_NAME: ${{ env.BRANCH_NAME }}
@@ -157,11 +160,11 @@ jobs:
         run: |
           echo "please review  ${PR_URL}"
 
-      - name: Wait for PR to be Merged
+      - name: Wait for PR to be merged
         if: ${{ env.CREATE_PR == 'true' }}
         shell: bash
         env:
-          TIMEOUT: ${{ inputs.timeout }}
+          TIMEOUT: ${{ inputs.TIMEOUT }}
           PR_URL: ${{ env.PR_URL }}
           GH_TOKEN: ${{ secrets.BOT_PAT }}
         run: |
