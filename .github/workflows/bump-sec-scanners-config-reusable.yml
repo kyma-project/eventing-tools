@@ -74,6 +74,7 @@ jobs:
         env:
           VERSION: ${{ inputs.VERSION }}
         shell: bash
+        # Where ever you use this workflow, the script hack/scripts/render-sec-scanners-config.sh must exist.
         run: ./hack/scripts/render-sec-scanners-config.sh "${VERSION}"
 
       # Check if there are changes so we can determin if all following steps can be skipped.
