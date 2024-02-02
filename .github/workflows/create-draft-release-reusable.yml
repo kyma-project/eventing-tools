@@ -28,9 +28,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         shell: bash
         run: |
-          # todo once the script was merged replace main with a commit sha:
-          # curl -sSL https://raw.githubusercontent.com/kyma-project/eventing-tools/<your-sha>/hack/scripts/create_changelog.sh | bash "${VERSION}"
-          curl -sL https://raw.githubusercontent.com/kyma-project/eventing-tools/main/hack/scripts/create_changelog.sh | bash "${VERSION}"
+          curl -sL https://raw.githubusercontent.com/kyma-project/eventing-tools/b3ca34f38eb11a70bbde9a830bb86d9f069fb0fa/hack/scripts/create_changelog.sh | bash -s "${VERSION}"
 
       - name: Print out changelog
         run: cat CHANGELOG.md
