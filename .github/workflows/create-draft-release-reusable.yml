@@ -28,9 +28,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         shell: bash
         run: |
-          # Note: your repository needs to have this script.
-          # Running this script should result in a file named CHANGELOG.md, located in the base directory.
-          ./hack/scripts/create_changelog.sh "${VERSION}"
+          # todo once the script was merged replace main with commit sha
+          # curl -sSL https://raw.githubusercontent.com/kyma-project/eventing-tools/<your-sha>/hack/scripts/create_changelog.sh | bash "${VERSION}"
+          curl -sSL https://raw.githubusercontent.com/kyma-project/eventing-tools/main/hack/scripts/create_changelog.sh | bash "${VERSION}"
 
       - name: Print out changelog
         run: cat CHANGELOG.md
