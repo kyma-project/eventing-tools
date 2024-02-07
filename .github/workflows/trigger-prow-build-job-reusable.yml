@@ -63,6 +63,6 @@ jobs:
           GITHUB_REPO: ${{ github.event.repository.name }}
         with:
           context: "${{ inputs.CONTEXT }}"
-          commit_ref: "release-${VERSION}" # the name of the release branch.
+          commit_ref: ${{ GITHUB_REF_NAME }} # the name of the release branch.
           timeout: ${{ inputs.TIMEOUT }}
           check_interval: ${{ inputs.INTERVAL }}
