@@ -67,15 +67,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
       - name: "Setup yq" # Required for rendering the sec-scanners-config.
-        uses: dcarbone/install-yq-action@v1.1.1
+        shell: bash
+        run: |
+          go install github.com/mikefarah/yq/v4@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
       - name: Render sec-scanners-config.yaml
         env:
           VERSION: ${{ inputs.VERSION }}
         shell: bash
         # Where ever you use this workflow, the script hack/scripts/render-sec-scanners-config.sh must exist.
-        run: ./hack/scripts/render-sec-scanners-config.sh "${VERSION}"
+        run: |
+          yq --version
+          ./hack/scripts/render-sec-scanners-config.sh "${VERSION}"
 
       # Check if there are changes so we can determin if all following steps can be skipped.
       - name: Check for changes
@@ -84,7 +93,7 @@ jobs:
           if [ -z "$(git status --porcelain)" ]; then 
             echo "No changes found. No need to create a PR" 
           else 
-            echo "Changes found. Creating a PR and waiting for it to be merged." 
+            echo "Changes found. Creating a PR and waiting for it to be merged."
             echo "CREATE_PR=true" >> $GITHUB_ENV 
           fi
 
