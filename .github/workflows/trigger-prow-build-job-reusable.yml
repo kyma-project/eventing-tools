@@ -21,11 +21,6 @@ on:
         required: true
         type: string
         description: The context is the name of the prow job we are waiting for.
-    secrets:
-      BOT_PAT:
-        required: true
-      GH_TOKEN:
-        required: true
 
 jobs:
   trigger-prow-build-job:
@@ -40,18 +35,17 @@ jobs:
       - name: Set up git
         if: ${{ env.CREATE_PR == 'true' }}
         env:
-          GH_TOKEN: ${{ secrets.BOT_PAT }}
           REPO: ${{ github.repository }}
         shell: bash
         run: |
           # set git username 
-          ghusername=$(curl -s -H "Authorization: token ${GH_TOKEN}" https://api.github.com/user | jq '.login')
+          ghusername=$(curl -s -H "Authorization: token ${{ secrets.BOT_PAT }}" https://api.github.com/user | jq '.login')
           git config user.name "${ghusername}"
           # set git mail address
           ghemailaddress="${ghusername}@users.noreply.github.com"
           git config user.email "${ghemailaddress}"
           # set remote url
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          git remote set-url origin "https://x-access-token:${{ secrets.BOT_PAT }}@github.com/${REPO}.git"
 
       - name: Push git tag to trigger the prow build job
         run: |
@@ -62,7 +56,7 @@ jobs:
         id: wait-build
         uses: kyma-project/wait-for-commit-status-action@2b3ffe09af8b6f40e1213d5fb7f91a7bd41ffb20
         env:
-          GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           GITHUB_OWNER: "${{ github.repository_owner }}"
           GITHUB_REPO: ${{ github.event.repository.name }}
         with:
