@@ -75,14 +75,11 @@ jobs:
         shell: bash
         run: |
           go install github.com/mikefarah/yq/v4@latest
-          PATH=$PATH:$(go env GOPATH)/bin
-          echo PATH="${PATH}">> $GITHUB_ENV
-          echo $PATH
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
       - name: Render sec-scanners-config.yaml
         env:
           VERSION: ${{ inputs.VERSION }}
-          PATH: ${{ env.PATH }}
         shell: bash
         # Where ever you use this workflow, the script hack/scripts/render-sec-scanners-config.sh must exist.
         run: |
