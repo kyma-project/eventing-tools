@@ -3,6 +3,10 @@ name: Trigger prow build job (reusable)
 on:
   workflow_call:
     inputs:
+      COMMIT_REF:
+        required: true
+        type: string
+        description: The commit ref for the `wait-for-commit-status-action` action. This should be the branch name from where the release was triggered.
       VERSION:
         required: true
         type: string
@@ -63,6 +67,6 @@ jobs:
           GITHUB_REPO: ${{ github.event.repository.name }}
         with:
           context: "${{ inputs.CONTEXT }}"
-          commit_ref: ${{ GITHUB_REF_NAME }} # the name of the release branch.
+          commit_ref: ${{ inputs.COMMIT_REF }}
           timeout: ${{ inputs.TIMEOUT }}
           check_interval: ${{ inputs.INTERVAL }}
