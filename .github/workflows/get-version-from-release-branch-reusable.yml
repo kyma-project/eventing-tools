@@ -35,11 +35,15 @@ jobs:
           MINOR: ${{ env.MINOR }}
         run: |
           TAGS=$(git tag -l "$MAJOR.$MINOR.*")
-          if [[ -z $TAGS ]]; then
-            PATCH=0
+          if [[ -n $TAGS ]]; then
+            # -n tests for a non-zero-length string
+            LAST_PATCH=$(echo "$TAGS" | cut -d '.' -f  3 | sort -n | tail -n  1)
+            PATCH=$((LAST_PATCH +  1))
           else
-            PATCH=$(( $(echo $TAGS | cut -d '.' -f 3 | sort -n | tail -n 1) + 1))
+            # If TAGS is empty, PATCH defaults to  0
+            PATCH=0
           fi
-          VERSION="${MAJOR}.${MINOR}.${PATCH:-0}"
+          VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "version: ${VERSION}"
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
           exit 0
