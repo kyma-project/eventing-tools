@@ -25,7 +25,7 @@ fi
 
 # Generate the changelog in the CHANGELOG.md.
 echo "## What has changed" >>${CHANGELOG_FILE}
-echo "" >>${CHANGELOG_FILE}
+echo >>${CHANGELOG_FILE} # add newline
 
 # Iterate over all commits since the previous release.
 git log "${PREVIOUS_RELEASE}"..HEAD --pretty=tformat:"%h" --reverse | while read -r commit; do
@@ -47,7 +47,7 @@ join -v2 \
 # Add new contributors to the 'new contributors' section of the changelog.
 if [ -s ${NEW_CONTRIB} ]; then
 	echo -e "\n## New contributors" >>${CHANGELOG_FILE}
-	echo "" >>${CHANGELOG_FILE}
+	echo >>${CHANGELOG_FILE} # add newline
 	while read -r user; do
 		REF_PR=$(grep "@${user}" ${CHANGELOG_FILE} | head -1 | grep -o " (#[0-9]\+)" || true)
 		if [ -n "${REF_PR}" ]; then #reference found
