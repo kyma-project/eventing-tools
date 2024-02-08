@@ -59,7 +59,7 @@ linters-settings:
       - name: line-length-limit
         severity: warning
         disabled: true
-        arguments: [120]
+        arguments: [ 120 ]
   funlen:
     lines: 100
   cyclop:
@@ -122,6 +122,36 @@ linters-settings:
         alias: ceclient
       - pkg: github.com/kyma-project/kyma/components/central-application-gateway/pkg/apis/applicationconnector/v1alpha1
         alias: kymaappconnv1alpha1
+
+        ######
+        ### The following imports are used by github.com/kyma-project/eventing-auth-manager repository.
+        ######
+      - pkg: github.com/kyma-project/eventing-auth-manager/internal/ias
+        alias: eamias
+      - pkg: github.com/kyma-project/eventing-auth-manager/controllers
+        alias: eamcontrollers
+      - pkg: github.com/kyma-project/eventing-auth-manager/api/v1alpha1
+        alias: eamapiv1alpha1
+      - pkg: github.com/kyma-project/eventing-auth-manager/internal/ias/internal/oidc/mocks
+        alias: eamoidcmocks
+      - pkg: github.com/kyma-project/lifecycle-manager/api/v1beta1
+        alias: klmapiv1beta1
+      - pkg: github.com/kyma-project/lifecycle-manager/api/v1beta2
+        alias: klmapiv1beta2
+      - pkg: k8s.io/apimachinery/pkg/api/errors
+        alias: kapierrors
+      - pkg: sigs.k8s.io/controller-runtime/pkg/client
+        alias: kpkgclient
+      - pkg: k8s.io/apimachinery/pkg/util/runtime
+        alias: kutilruntime
+      - pkg: k8s.io/client-go/kubernetes/scheme
+        alias: kscheme
+      - pkg: sigs.k8s.io/controller-runtime
+        alias: kcontrollerruntime
+      - pkg: github.com/onsi/gomega/types
+        alias: onsigomegatypes
+      - pkg: sigs.k8s.io/controller-runtime/pkg/log
+        alias: kpkglog
 
   ireturn:
     allow:
