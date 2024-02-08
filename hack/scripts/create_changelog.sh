@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Optional args need to be handled before 'set -o nonset'.
+PREVIOUS_RELEASE=$3 # for testability
+
 # Error handling.
 set -o nounset  # treat unset variables as an error and exit immediately.
 set -o errexit  # exit immediately when a command fails.
@@ -7,15 +10,18 @@ set -E          # needs to be set if we want the ERR trap
 set -o pipefail # prevents errors in a pipeline from being masked
 
 RELEASE_TAG=$1
+REPOSITORY=$2
 
-REPOSITORY=${REPOSITORY:-kyma-project/eventing-manager}
 GITHUB_URL=https://api.github.com/repos/${REPOSITORY}
 GITHUB_AUTH_HEADER="Authorization: token ${GH_TOKEN}"
 CHANGELOG_FILE="CHANGELOG.md"
 
-# The git describe --tag --abbrev=0 command is used to find the most recent tag that is reachable from a commit.
-# The --tag option tells git describe to consider any tag found in the refs/tags namespace, enabling matching a lightweight (non-annotated) tag.
-PREVIOUS_RELEASE=$(git describe --tags --abbrev=0)
+# If the previous release was not passed, we will
+if [ "${PREVIOUS_RELEASE}" == "" ]; then
+	# The git describe --tag --abbrev=0 command is used to find the most recent tag that is reachable from a commit.
+	# The --tag option tells git describe to consider any tag found in the refs/tags namespace, enabling matching a lightweight (non-annotated) tag.
+	PREVIOUS_RELEASE=$(git describe --tags --abbrev=0)
+fi
 
 # Generate the changelog in the CHANGELOG.md.
 echo "## What has changed" >>${CHANGELOG_FILE}
@@ -30,7 +36,7 @@ git log "${PREVIOUS_RELEASE}"..HEAD --pretty=tformat:"%h" --reverse | while read
 done
 
 # Create a new contibutors file (with a unique name based on the process ID of the current shell).
-NEW_CONTRIB=$$.authors
+NEW_CONTRIB=$$.new
 
 # Find unique authors who contributed since the last release, but not before it, and add them to the NEW_CONTRIB file.
 join -v2 \
@@ -51,3 +57,6 @@ fi
 
 # Append link to the full-changelog this changelog.
 echo -e "\n**Full changelog**: https://github.com/$REPOSITORY/compare/${PREVIOUS_RELEASE}...${RELEASE_TAG}" >>${CHANGELOG_FILE}
+
+# Cleanup the NEW_CONTRIB file.
+rm ${NEW_CONTRIB} || true
