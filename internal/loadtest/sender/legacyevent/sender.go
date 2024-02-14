@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -87,6 +88,7 @@ func (s *Sender) SendEvent(event events.Event) {
 	}
 	resp, err := s.client.Do(rq)
 	if err != nil {
+		log.Println(err)
 		s.undeliveredC <- event
 		return
 	}
