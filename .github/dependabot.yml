@@ -5,19 +5,27 @@
 
 version: 2
 updates:
-  - package-ecosystem: "github-actions" # See documentation for possible values
+  - package-ecosystem: "gomod" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: "deps(dependabot)"
   - package-ecosystem: "docker" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: "deps(dependabot)"
   - package-ecosystem: "docker" # See documentation for possible values
     directory: "resources/loadtest/base" # Location of package manifests
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: "deps(dependabot)"
   - package-ecosystem: "docker" # See documentation for possible values
     directory: "resources/validationtest/base" # Location of package manifests
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: "deps(dependabot)"
