@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/google/uuid v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/text v0.14.0
 	k8s.io/api v0.29.0
