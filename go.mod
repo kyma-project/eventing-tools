@@ -3,7 +3,7 @@ module github.com/kyma-project/eventing-tools
 go 1.19
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.14.0
+	github.com/cloudevents/sdk-go/v2 v2.15.0
 	github.com/google/uuid v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/spf13/cobra v1.8.0
