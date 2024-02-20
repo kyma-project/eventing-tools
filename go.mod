@@ -1,6 +1,6 @@
 module github.com/kyma-project/eventing-tools
 
-go 1.19
+go 1.22.0
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.15.0
@@ -15,11 +15,6 @@ require (
 )
 
 require (
-	github.com/google/gnostic-models v0.6.8 // indirect
-	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-)
-
-require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
@@ -28,9 +23,11 @@ require (
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
