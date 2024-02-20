@@ -1,5 +1,5 @@
 #syntax=docker/dockerfile-upstream:1.4
-FROM eu.gcr.io/kyma-project/external/golang:1.20.3-alpine3.17 as builder
+FROM eu.gcr.io/kyma-project/external/golang:1.22.0-alpine3.19 as builder
 
 WORKDIR /app
 
