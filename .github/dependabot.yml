@@ -9,7 +9,7 @@ updates:
     schedule:
       interval: "weekly"
       day: monday
-      time: 07:00
+      time: "07:00"
     commit-message:
       prefix: "deps(dependabot)"
   - package-ecosystem: "docker" # See documentation for possible values
@@ -17,7 +17,7 @@ updates:
     schedule:
       interval: "weekly"
       day: monday
-      time: 07:00
+      time: "07:00"
     commit-message:
       prefix: "deps(dependabot)"
   - package-ecosystem: "docker" # See documentation for possible values
@@ -25,7 +25,7 @@ updates:
     schedule:
       interval: "weekly"
       day: monday
-      time: 07:00
+      time: "07:00"
     commit-message:
       prefix: "deps(dependabot)"
   - package-ecosystem: "docker" # See documentation for possible values
@@ -33,6 +33,6 @@ updates:
     schedule:
       interval: "weekly"
       day: monday
-      time: 07:00
+      time: "07:00"
     commit-message:
       prefix: "deps(dependabot)"
