@@ -192,6 +192,16 @@ linters-settings:
         alias: nmtsmatchers
       - pkg: k8s.io/api/events/v1
         alias: keventsv1
+      - pkg: github.com/kyma-project/nats-manager/pkg/nats
+        alias: nmnats
+      - pkg: k8s.io/api/rbac/v1
+        alias: krbacv1
+      - pkg: k8s.io/api/autoscaling/v1
+        alias: kautoscalingv1
+      - pkg: github.com/kyma-project/nats-manager/internal/controller/cache
+        alias: nmctrlcache
+      - pkg: github.com/kyma-project/nats-manager/pkg/labels
+        alias: nmlabels
 
   ireturn:
     allow:
