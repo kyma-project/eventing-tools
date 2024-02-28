@@ -59,7 +59,7 @@ linters-settings:
       - name: line-length-limit
         severity: warning
         disabled: true
-        arguments: [ 120 ]
+        arguments: [120]
   funlen:
     lines: 100
   cyclop:
@@ -152,6 +152,56 @@ linters-settings:
         alias: onsigomegatypes
       - pkg: sigs.k8s.io/controller-runtime/pkg/log
         alias: kpkglog
+
+        ######
+        ### The following imports are used by github.com/kyma-project/nats-manager repository.
+        ######
+      - pkg: k8s.io/api/apps/v1
+        alias: kappsv1
+      - pkg: k8s.io/apimachinery/pkg/types
+        alias: ktypes
+      - pkg: sigs.k8s.io/controller-runtime/pkg/log/zap
+        alias: klogzap
+      - pkg: github.com/kyma-project/nats-manager/pkg/k8s/mocks
+        alias: nmkmocks
+      - pkg: k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
+        alias: kapiextv1
+      - pkg: k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset
+        alias: kapiextclientset
+      - pkg: github.com/kyma-project/nats-manager/internal/controller/nats
+        alias: nmctrl
+      - pkg: github.com/kyma-project/nats-manager/api/v1alpha1
+        alias: nmapiv1alpha1
+      - pkg: k8s.io/api/policy/v1
+        alias: kapipolicyv1
+      - pkg: github.com/kyma-project/nats-manager/pkg/k8s/chart/mocks
+        alias: nmkchartmocks
+      - pkg: k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake
+        alias: kapiextclientsetfake
+      - pkg: k8s.io/apimachinery/pkg/util/yaml
+        alias: kutilyaml
+      - pkg: github.com/kyma-project/nats-manager/pkg/manager/mocks
+        alias: nmmgrmocks
+      - pkg: github.com/kyma-project/nats-manager/internal/controller/nats/mocks
+        alias: nmctrlmocks
+      - pkg: github.com/kyma-project/nats-manager/pkg/manager
+        alias: nmmgr
+      - pkg: github.com/kyma-project/nats-manager/internal/controller/nats/url
+        alias: nmctrlurl
+      - pkg: github.com/kyma-project/nats-manager/testutils/matchers/nats
+        alias: nmtsmatchers
+      - pkg: k8s.io/api/events/v1
+        alias: keventsv1
+      - pkg: github.com/kyma-project/nats-manager/pkg/nats
+        alias: nmnats
+      - pkg: k8s.io/api/rbac/v1
+        alias: krbacv1
+      - pkg: k8s.io/api/autoscaling/v1
+        alias: kautoscalingv1
+      - pkg: github.com/kyma-project/nats-manager/internal/controller/cache
+        alias: nmctrlcache
+      - pkg: github.com/kyma-project/nats-manager/pkg/labels
+        alias: nmlabels
 
   ireturn:
     allow:
