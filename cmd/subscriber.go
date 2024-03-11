@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/cobra"
 
 	loadtestsubscriber "github.com/kyma-project/eventing-tools/internal/loadtest/subscriber"
-	validationtestsubscriber "github.com/kyma-project/eventing-tools/internal/validationtest/subscriber"
 )
 
 var subscriberPort int
@@ -14,12 +13,7 @@ var subscriberCmd = &cobra.Command{
 	Use:   "subscriber",
 	Short: "Listen on a given port for cloudevents",
 	Run: func(cmd *cobra.Command, args []string) {
-		switch loadtest {
-		case true:
-			loadtestsubscriber.Start(subscriberPort)
-		case false:
-			validationtestsubscriber.Start(subscriberPort)
-		}
+		loadtestsubscriber.Start(subscriberPort)
 	},
 }
 
