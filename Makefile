@@ -1,3 +1,31 @@
+
+LOCALBIN ?= $(shell pwd)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+
+# =============================================================================
+# Lint
+# =============================================================================
+
+GOLANG_CI_LINT_VERSION ?= v1.55.2
+.PHONY: golangci-lint
+golangci-lint:
+	test -s $(LOCALBIN)/golangci-lint && $(LOCALBIN)/golangci-lint version | grep -q $(GOLANG_CI_LINT_VERSION) || \
+		GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANG_CI_LINT_VERSION)
+
+.PHONY: lint
+lint: golangci-lint## Check lint issues using `golangci-lint`
+	$(LOCALBIN)/golangci-lint run --timeout 5m
+
+.PHONY: lint-compact
+lint-compact: golangci-lint## Check lint issues using `golangci-lint` in compact result format
+	$(LOCALBIN)/golangci-lint run --timeout 5m --print-issued-lines=false
+
+.PHONY: lint-fix
+lint-fix: golangci-lint## Check and fix lint issues using `golangci-lint`
+	$(LOCALBIN)/golangci-lint run --fix --timeout 5m
+
+
 # =============================================================================
 # Loadtest
 # =============================================================================
