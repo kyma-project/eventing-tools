@@ -1,4 +1,4 @@
-name: Backend-switching-tests-gardener (reusable)
+name: wait-build (reusable)
 
 on:
   workflow_call:
