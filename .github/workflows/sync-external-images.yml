@@ -1,0 +1,25 @@
+
+name: sync-external-images
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "external-images.yml"
+  pull_request_target:
+    types: [ opened, edited, synchronize, reopened, ready_for_review ]
+    branches:
+      - main
+    paths:
+      - "external-images.yml"
+
+permissions:
+  id-token: write # This is required for requesting the JWT token
+  contents: read # This is required for actions/checkout
+
+jobs:
+  sync-external-images:
+    uses: kyma-project/test-infra/.github/workflows/image-syncer.yml@main
+    with:
+      debug: true

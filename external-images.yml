@@ -1,0 +1,5 @@
+
+images:
+  - source: golang@sha256:2d40d4fc278dad38be0777d5e2a88a2c6dee51b0b29c97a764fc6c6a11ca893c
+    tag: 1.24.0-alpine3.2
+    amd64Only: true
