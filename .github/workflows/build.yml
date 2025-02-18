@@ -7,8 +7,12 @@ on:
   push:
     branches: [ "main" ]
     tags: [ '*.*.*' ]
+    paths-ignores:
+      - 'external-images.yml'
   pull_request:
     branches: [ "main" ]
+    paths-ignores:
+      - 'external-images.yml'
 
 env:
   # Use docker.io for Docker Hub if empty
