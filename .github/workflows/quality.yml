@@ -5,9 +5,13 @@ on:
       - v*
     branches:
       - main
+    paths-ignores:
+      - 'external-images.yaml'
   pull_request:
     branches:
       - main
+    paths-ignores:
+      - 'external-images.yaml'
 permissions:
   contents: read
   # Optional: allow read access to pull request. Use with `only-new-issues` option.
