@@ -3,3 +3,12 @@ images:
   - source: golang@sha256:2d40d4fc278dad38be0777d5e2a88a2c6dee51b0b29c97a764fc6c6a11ca893c
     tag: 1.24.0-alpine3.2
     amd64Only: true
+  - source: bitnami/clickhouse@sha256:3cf6544f6c6cd33f6cc4960bc4a237de5e95a0df35af2bfbf6cc6073754fea04
+    tag: 24.12.3-debian-12-r1
+    amd64Only: true
+  - source: "langfuse/langfuse-worker@sha256:6fe855949aa96c5596b8f0b93b5216653e92c8f3f7b2dad1f2845623d3bb0c60"
+    tag: 3.28.3
+    amd64Only: true
+  - source: "langfuse/langfuse@sha256:30a586389ff038f43b3ab9bcd54e33720fe77f583b790362c1db6a324513ae3e"
+    tag: 3.28.3
+    amd64Only: true
