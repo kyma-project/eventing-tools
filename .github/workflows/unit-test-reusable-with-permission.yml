@@ -1,0 +1,28 @@
+# This workflow defines a reusable Go unit test flow, that relies on the existence of the make target "test".
+
+name: Unit Test (reusable)
+
+on:
+  workflow_call:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed for vendoring. `setup-go`` needs at least `read` level. 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod" # This uses the Go version defined in the mod file, in contrast to setting a defined version.
+
+      - name: Sync Go dependencies
+        run: |
+          go mod vendor
+
+      - name: Run tests
+        run: |
+          make test
