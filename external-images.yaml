@@ -7,7 +7,7 @@ images:
     tag: 24.12.3-debian-12-r1
     amd64Only: true
   - source: bitnami/zookeeper@sha256:6f2bdff0e22c3b156f40fac40bc163b97254b699b1c224cb491df6d51dc023a1
-    images: 3.9.3-debian-12-r3
+    tag: 3.9.3-debian-12-r3
     amd64Only: true
   - source: langfuse/langfuse@sha256:30a586389ff038f43b3ab9bcd54e33720fe77f583b790362c1db6a324513ae3e
     tag: 3.28.3
