@@ -12,3 +12,6 @@ images:
   - source: langfuse/langfuse-worker@sha256:6fe855949aa96c5596b8f0b93b5216653e92c8f3f7b2dad1f2845623d3bb0c60
     tag: 3.28.3
     amd64Only: true
+  - source: bitnami/zookeeper@sha256:6f2bdff0e22c3b156f40fac40bc163b97254b699b1c224cb491df6d51dc023a1
+    tag: 3.9.3-debian-12-r3
+    amd64Only: true
