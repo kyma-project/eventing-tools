@@ -5,13 +5,17 @@ on:
       - v*
     branches:
       - main
-    paths-ignores:
-      - 'external-images.yaml'
+    paths:
+      - '**.go'
+      - go.mod
+      - Dockerfile
   pull_request:
     branches:
       - main
-    paths-ignores:
-      - 'external-images.yaml'
+    paths:
+      - '**.go'
+      - go.mod
+      - Dockerfile
 permissions:
   contents: read
   # Optional: allow read access to pull request. Use with `only-new-issues` option.
