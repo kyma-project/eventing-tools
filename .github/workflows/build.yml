@@ -7,12 +7,16 @@ on:
   push:
     branches: [ "main" ]
     tags: [ '*.*.*' ]
-    paths-ignores:
-      - 'external-images.yaml'
+    paths:
+      - '**.go'
+      - go.mod
+      - Dockerfile
   pull_request:
     branches: [ "main" ]
-    paths-ignores:
-      - 'external-images.yaml'
+    paths:
+      - '**.go'
+      - go.mod
+      - Dockerfile
 
 env:
   # Use docker.io for Docker Hub if empty
