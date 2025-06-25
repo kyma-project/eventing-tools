@@ -1,5 +1,5 @@
 images:
-  - source: "ghcr.io/gardenlinux/gardenlinux@sha256:d8e7ce14a32ab540a5834152bc69b2babb4b71f1ccaf44cfda98d02d7ae62ca"
+  - source: "ghcr.io/gardenlinux/gardenlinux@sha256:d8e7ce14a32ab540a5834152bc69b2babb4b71f1ccaf44cfda98d02d7ae62ca7"
     tag: "1592.10"
     amd64Only: true
   - source: "natsio/prometheus-nats-exporter@sha256:26c826662ac8424597cc9bdf89ea5b606eb66e3c11db9b1215c27d2076bbb01b"
