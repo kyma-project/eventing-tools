@@ -2,8 +2,8 @@ images:
   - source: "natsio/prometheus-nats-exporter@sha256:26c826662ac8424597cc9bdf89ea5b606eb66e3c11db9b1215c27d2076bbb01b"
     tag: 0.17.3
     amd64Only: true
-  - source: "natsio/nats-server-config-reloader@sha256:bca7e221ec6f1221ecd74e2c13b075c913a5bcd998e87a4da4d747033440ee93"
-    tag: 0.18.2
+  - source: "natsio/nats-server-config-reloader@sha256:8750b9fb220d24f9db659b0894c5490a0fef816e5814ffacec943d85e836aa96"
+    tag: 0.22.1
     amd64Only: true
   - source: "golang@sha256:b6ed3fd0452c0e9bcdef5597f29cc1418f61672e9d3a2f55bf02e7222c014abd"
     tag: 1.25.1-alpine3.22
