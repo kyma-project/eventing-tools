@@ -11,3 +11,6 @@ images:
   - source: "golang@sha256:fa3380ab0d73b706e6b07d2a306a4dc68f20bfc1437a6a6c47c8f88fe4af6f75"
     tag: 1.25.6-alpine3.22
     amd64Only: true
+  - source: "alpine@sha256:55ae5d250caebc548793f321534bc6a8ef1d116f334f18f4ada1b2daad3251b2"
+    tag: 3.22
+    amd64Only: true
