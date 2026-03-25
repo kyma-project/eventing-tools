@@ -1,0 +1,96 @@
+name: FIPS Images Syncer
+
+permissions:
+  id-token: write # This is required by image-builder
+  contents: read # This is required by image-builder
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "external-images-fips.yaml"
+
+jobs:
+  parse-images:
+    name: Parse images
+    runs-on: ubuntu-latest
+    outputs:
+      nats-fips-name: ${{ steps.parse.outputs.nats-fips-name }}
+      nats-fips-tag: ${{ steps.parse.outputs.nats-fips-tag }}
+      nats-fips-source: ${{ steps.parse.outputs.nats-fips-source }}
+      prometheus-nats-exporter-fips-name: ${{ steps.parse.outputs.prometheus-nats-exporter-fips-name }}
+      prometheus-nats-exporter-fips-tag: ${{ steps.parse.outputs.prometheus-nats-exporter-fips-tag }}
+      prometheus-nats-exporter-fips-source: ${{ steps.parse.outputs.prometheus-nats-exporter-fips-source }}
+      nats-server-config-reloader-fips-name: ${{ steps.parse.outputs.nats-server-config-reloader-fips-name }}
+      nats-server-config-reloader-fips-tag: ${{ steps.parse.outputs.nats-server-config-reloader-fips-tag }}
+      nats-server-config-reloader-fips-source: ${{ steps.parse.outputs.nats-server-config-reloader-fips-source }}
+      bash-fips-name: ${{ steps.parse.outputs.bash-fips-name }}
+      bash-fips-tag: ${{ steps.parse.outputs.bash-fips-tag }}
+      bash-fips-source: ${{ steps.parse.outputs.bash-fips-source }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse images
+        id: parse
+        shell: bash
+        run: |
+          for i in $(seq 0 $(( $(yq '.images | length' external-images-fips.yaml) - 1 ))); do
+            name=$(yq ".images[$i].name" external-images-fips.yaml)
+            tag=$(yq ".images[$i].tag" external-images-fips.yaml)
+            source=$(yq ".images[$i].source" external-images-fips.yaml)
+            echo "${name}-name=${name}" >> "$GITHUB_OUTPUT"
+            echo "${name}-tag=${tag}" >> "$GITHUB_OUTPUT"
+            echo "${name}-source=${source}" >> "$GITHUB_OUTPUT"
+          done
+
+  build-nats:
+    name: Build nats image
+    uses: kyma-project/test-infra/.github/workflows/image-builder.yml@main
+    needs: parse-images
+    with:
+      name: ${{ needs.parse-images.outputs.nats-fips-name }}
+      use-restricted-registry: true
+      dockerfile: docker/nats-fips.Dockerfile
+      build-args: |
+        SOURCE_IMAGE=${{ needs.parse-images.outputs.nats-fips-source }}
+      context: .
+      tags: ${{ needs.parse-images.outputs.nats-fips-tag }}
+
+  build-nats-server-config-reloader:
+    name: Build reloader image
+    uses: kyma-project/test-infra/.github/workflows/image-builder.yml@main
+    needs: parse-images
+    with:
+      name: ${{ needs.parse-images.outputs.nats-server-config-reloader-fips-name }}
+      use-restricted-registry: true
+      dockerfile: docker/nats-fips.Dockerfile
+      build-args: |
+        SOURCE_IMAGE=${{ needs.parse-images.outputs.nats-server-config-reloader-fips-source }}
+      context: .
+      tags: ${{ needs.parse-images.outputs.nats-server-config-reloader-fips-tag }}
+
+  build-prometheus-nats-exporter:
+    name: Build prometheus image
+    uses: kyma-project/test-infra/.github/workflows/image-builder.yml@main
+    needs: parse-images
+    with:
+      name: ${{ needs.parse-images.outputs.prometheus-nats-exporter-fips-name }}
+      use-restricted-registry: true
+      dockerfile: docker/nats-fips.Dockerfile
+      build-args: |
+        SOURCE_IMAGE=${{ needs.parse-images.outputs.prometheus-nats-exporter-fips-source }}
+      context: .
+      tags: ${{ needs.parse-images.outputs.prometheus-nats-exporter-fips-tag }}
+
+  build-bash-init:
+    name: Build bash-init image
+    uses: kyma-project/test-infra/.github/workflows/image-builder.yml@main
+    needs: parse-images
+    with:
+      name: ${{ needs.parse-images.outputs.bash-fips-name }}
+      use-restricted-registry: true
+      dockerfile: docker/nats-fips.Dockerfile
+      build-args: |
+        SOURCE_IMAGE=${{ needs.parse-images.outputs.bash-fips-source }}
+      context: .
+      tags: ${{ needs.parse-images.outputs.bash-fips-tag }}
