@@ -1,6 +1,6 @@
 images:
   - source: "europe-docker.pkg.dev/kyma-project/restricted-prod/sap.com/nats-fips:2.14.0@sha256:b33eee38570f25bbd3854a3168e48dc7ef0db100a62b9a31fc19ed3f89e0009b"
-    tag: 2.14.000
+    tag: 2.14.0
     name: nats-fips
   - source: "europe-docker.pkg.dev/kyma-project/restricted-prod/sap.com/nats-server-config-reloader-fips:0.22.4@sha256:4ea33fabec764dd5af4166a962180cfb26dea29740d199458f12831f7c77e4a8"
     tag: 0.22.401
