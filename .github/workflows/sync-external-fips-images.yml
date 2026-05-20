@@ -81,16 +81,3 @@ jobs:
         SOURCE_IMAGE=${{ needs.parse-images.outputs.prometheus-nats-exporter-fips-source }}
       context: .
       tags: ${{ needs.parse-images.outputs.prometheus-nats-exporter-fips-tag }}
-
-  build-bash-init:
-    name: Build bash-init image
-    uses: kyma-project/test-infra/.github/workflows/image-builder.yml@main
-    needs: parse-images
-    with:
-      name: ${{ needs.parse-images.outputs.bash-fips-name }}
-      use-restricted-registry: true
-      dockerfile: docker/nats-fips.Dockerfile
-      build-args: |
-        SOURCE_IMAGE=${{ needs.parse-images.outputs.bash-fips-source }}
-      context: .
-      tags: ${{ needs.parse-images.outputs.bash-fips-tag }}
