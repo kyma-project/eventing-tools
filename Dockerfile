@@ -1,5 +1,5 @@
 #syntax=docker/dockerfile-upstream:1.4
-FROM europe-docker.pkg.dev/kyma-project/prod/external/golang:1.22.0-alpine3.19 as builder
+FROM europe-docker.pkg.dev/kyma-project/prod/external/golang:1.22.2-alpine3.19 as builder
 
 WORKDIR /app
 
