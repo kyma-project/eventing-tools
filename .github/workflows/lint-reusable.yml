@@ -19,7 +19,7 @@ jobs:
           go-version-file: "go.mod" # This uses the Go version defined in the mod file, in contrast to setting a defined version.
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
         with:
           version: v1.55
           args: --timeout=5m
