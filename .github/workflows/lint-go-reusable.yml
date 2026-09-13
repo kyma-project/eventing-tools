@@ -33,7 +33,7 @@ jobs:
         run: wget -O .golangci.yaml ${{ inputs.lint-config-uri }} # This can be a remote file only. E.g. https://raw.githubusercontent.com/kyma-project/eventing-tools/main/config/lint/.golangci.yaml
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
         with:
           version: v1.55
           args: --timeout=5m --config=./.golangci.yaml --issues-exit-code 1 # Failed if any issues are found
