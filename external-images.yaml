@@ -1,10 +1,10 @@
 images:
-  - source: "natsio/prometheus-nats-exporter@sha256:4fbf6dacb84780a45a1c3af9b1080c69451a288d20902deae671b80717bb8f61"
-    tag: 0.20.1
+  - source: "natsio/prometheus-nats-exporter@sha256:c623b608e148e31e1c1c878673a197f1828e58ce90de4f01d22f1baa84c8fee9"
+    tag: 0.20.2
     amd64Only: true
-  - source: "natsio/nats-server-config-reloader@sha256:64cb6c858e794906d3167378e02b7e0feb83c4e14c07b371eb8d921ef8c4a60b"
-    tag: 0.23.0
+  - source: "natsio/nats-server-config-reloader@sha256:d758a82a9c20337e46c2f7356a413faa52cf4d6b02497c3ad81f72f1ba106464"
+    tag: 0.24.0
     amd64Only: true
-  - source: "nats@sha256:92747d0e6e1e01d40fddf588d26fccbe9dcc0f6b5af62eac4d11cbc4edd5bc2e"
-    tag: 2.14.5-scratch
+  - source: "nats@sha256:c0d27f3054601a99055aa5ec897b0a55bf1869ae50f454e659acfbbea11d2ab7"
+    tag: 2.15.0-scratch
     amd64Only: true
