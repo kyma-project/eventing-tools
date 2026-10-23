@@ -1,10 +1,10 @@
 images:
-  - source: "europe-docker.pkg.dev/kyma-project/restricted-prod/sap.com/nats-fips:2.15.0@sha256:41cf7961bb0aeaad7c1478f5d033a256a44883a67a7197dc67461c59bb15a0f8"
-    tag: 2.15.100
+  - source: "europe-docker.pkg.dev/kyma-project/restricted-prod/sap.com/nats-fips:2.15.1@sha256:9b0b1bec11f901e3d0407c3e2f3fc104c71df44141ab09733e922b8c5fff389d"
+    tag: 2.15.101
     name: nats-fips
-  - source: "europe-docker.pkg.dev/kyma-project/restricted-prod/sap.com/nats-server-config-reloader-fips:0.24.0@sha256:c2af1c3d39f15258177f50f1e94064a084f3852e502c08de8fa101b3deaa829b"
-    tag: 0.24.100
+  - source: "europe-docker.pkg.dev/kyma-project/restricted-prod/sap.com/nats-server-config-reloader-fips:0.25.0@sha256:9626c8dee4c412e4364d0f5646fcb12076aca0229ebacc3ff9e701f78cf92337"
+    tag: 0.25.100
     name: nats-server-config-reloader-fips
-  - source: "europe-docker.pkg.dev/kyma-project/restricted-prod/sap.com/prometheus-nats-exporter-fips:0.20.2@sha256:fc9038ceee7953ec6135fe6220f2dd50d8180fae0a20551a25af834009cdc47d"
-    tag: 0.20.200
+  - source: "europe-docker.pkg.dev/kyma-project/restricted-prod/sap.com/prometheus-nats-exporter-fips:0.20.3@sha256:d31c48cf4fa03053a9375ba5ed40ee5fb27aa0bdde7b9c449c978973ebe313f2"
+    tag: 0.20.300
     name: prometheus-nats-exporter-fips
